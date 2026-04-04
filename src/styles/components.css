@@ -1,0 +1,1036 @@
+/* ============================================================
+   GRIDIRON — Component Library
+   Requires: theme.css
+   Import once. Use class names directly in JSX/HTML.
+   ============================================================ */
+
+/* ── Reset ───────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hi);
+}
+
+/* ══════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ══════════════════════════════════════════════════════════ */
+
+/* Display — Bebas Neue, used for page titles, big numbers */
+.t-display-2xl {
+  font-family: var(--font-display);
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+.t-display-xl {
+  font-family: var(--font-display);
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+.t-display-lg {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+.t-display-md {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.t-display-sm {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+/* Prose — DM Sans, used for body copy */
+.t-body-lg {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--text);
+}
+.t-body {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text);
+}
+.t-body-sm {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text);
+}
+.t-body-xs {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* Mono — JetBrains Mono, used for labels, codes, data */
+.t-mono-md {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-2);
+}
+.t-mono-sm {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-2);
+}
+.t-mono-xs {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-3);
+}
+
+/* Eyebrow — all-caps mono label, used above section titles */
+.t-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pulsing dot — used inside .t-eyebrow for "live" pages */
+.t-eyebrow-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: eyebrow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes eyebrow-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+/* Data label — uppercase mono, used in stat cards and table headers */
+.t-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Color utilities — apply to any t- class */
+.t-muted {
+  color: var(--text-2);
+}
+.t-dim {
+  color: var(--text-3);
+}
+.t-accent {
+  color: var(--accent);
+}
+.t-green {
+  color: var(--green);
+}
+.t-red {
+  color: var(--red);
+}
+.t-amber {
+  color: var(--amber);
+}
+.t-blue {
+  color: var(--blue);
+}
+
+/* ══════════════════════════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════════════════════════
+
+   Usage:
+     <button class="btn btn-primary">Save</button>
+     <button class="btn btn-ghost">Cancel</button>
+     <button class="btn btn-danger btn-sm">Delete</button>
+*/
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    color var(--transition);
+  white-space: nowrap;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Sizes */
+.btn-sm {
+  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+}
+.btn-lg {
+  font-size: 12px;
+  padding: 11px 22px;
+  border-radius: var(--radius-lg);
+}
+.btn-full {
+  width: 100%;
+}
+
+/* Variants */
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-md);
+  color: var(--text-2);
+}
+.btn-ghost:hover {
+  background: var(--bg-3);
+  color: var(--text);
+  border-color: var(--border-hi);
+}
+
+.btn-green {
+  background: var(--green-dim);
+  border-color: var(--green-border);
+  color: var(--green);
+}
+.btn-green:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.btn-danger {
+  background: var(--red-dim);
+  border-color: var(--red-border);
+  color: var(--red);
+}
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.btn-amber {
+  background: var(--amber-dim);
+  border-color: var(--amber-border);
+  color: var(--amber);
+}
+.btn-amber:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.btn-blue {
+  background: var(--blue-dim);
+  border-color: var(--blue-border);
+  color: var(--blue);
+}
+.btn-blue:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+/* Icon-only square button */
+.btn-icon {
+  padding: 6px;
+  border-radius: var(--radius-md);
+  width: 32px;
+  height: 32px;
+}
+
+/* Active / loading state */
+.btn.loading {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BADGES
+   ══════════════════════════════════════════════════════════
+
+   Usage:
+     <span class="badge badge-active">Active</span>
+     <span class="badge badge-pending">Pending</span>
+*/
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* Leading dot */
+.badge::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+/* No dot variant */
+.badge-nodot::before {
+  display: none;
+}
+
+.badge-active {
+  background: var(--green-dim);
+  border-color: var(--green-border);
+  color: var(--green);
+}
+.badge-pending {
+  background: var(--amber-dim);
+  border-color: var(--amber-border);
+  color: var(--amber);
+}
+.badge-draft {
+  background: var(--blue-dim);
+  border-color: var(--blue-border);
+  color: var(--blue);
+}
+.badge-danger {
+  background: var(--red-dim);
+  border-color: var(--red-border);
+  color: var(--red);
+}
+.badge-archived {
+  background: var(--bg-3);
+  border-color: var(--border);
+  color: var(--text-3);
+}
+.badge-neutral {
+  background: var(--bg-3);
+  border-color: var(--border-md);
+  color: var(--text-2);
+}
+
+/* ══════════════════════════════════════════════════════════
+   TABLES
+   ══════════════════════════════════════════════════════════
+
+   Usage:
+     <div class="table-wrap">
+       <table class="table">
+         <thead><tr><th>Col</th></tr></thead>
+         <tbody><tr><td>Val</td></tr></tbody>
+       </table>
+     </div>
+*/
+
+.table-wrap {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 11px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Right-align numeric columns */
+.table th.col-num,
+.table td.col-num {
+  text-align: right;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+.table tbody tr:hover {
+  background: var(--bg-3);
+}
+
+/* Dimmed row — e.g. archived records */
+.table tbody tr.row-dim {
+  opacity: 0.55;
+}
+.table tbody tr.row-dim:hover {
+  opacity: 0.75;
+}
+
+.table td {
+  padding: 13px 16px;
+  font-size: 13px;
+  color: var(--text);
+  vertical-align: middle;
+}
+
+/* Cell variants */
+.table td.td-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.table td.td-dim {
+  color: var(--text-3);
+}
+.table td.td-bold {
+  font-weight: 600;
+}
+
+/* Row action cell — right-aligned, no wrapping */
+.table td.td-actions {
+  white-space: nowrap;
+}
+
+/* Row actions group */
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Progress bar — used in table cells */
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-4);
+  border-radius: 2px;
+  min-width: 60px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--green);
+  transition: width 0.3s ease;
+}
+
+.progress-bar-fill.fill-dim {
+  background: var(--text-3);
+}
+.progress-bar-fill.fill-amber {
+  background: var(--amber);
+}
+.progress-bar-fill.fill-blue {
+  background: var(--blue);
+}
+
+/* ══════════════════════════════════════════════════════════
+   CARDS
+   ══════════════════════════════════════════════════════════ */
+
+/* Base card */
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  transition: border-color var(--transition);
+}
+
+.card:hover {
+  border-color: var(--border-md);
+}
+
+/* Stat card — used in overview grids */
+.stat-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+
+.stat-card:hover {
+  border-color: var(--border-md);
+}
+
+/* Colored top bar per card */
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.stat-card.bar-accent::before {
+  background: var(--accent);
+}
+.stat-card.bar-green::before {
+  background: var(--green);
+}
+.stat-card.bar-blue::before {
+  background: var(--blue);
+}
+.stat-card.bar-amber::before {
+  background: var(--amber);
+}
+.stat-card.bar-red::before {
+  background: var(--red);
+}
+
+.stat-card .stat-value {
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1;
+  color: var(--text);
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.stat-card .stat-value-sm {
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--text);
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+/* Delta — the +/- trend line below stat value */
+.stat-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.stat-delta.up {
+  color: var(--green);
+}
+.stat-delta.down {
+  color: var(--red);
+}
+.stat-delta.warn {
+  color: var(--amber);
+}
+.stat-delta.info {
+  color: var(--blue);
+}
+
+/* ══════════════════════════════════════════════════════════
+   FORM ELEMENTS
+   ══════════════════════════════════════════════════════════ */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label,
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Shared input base */
+.input,
+.select,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  background: var(--bg-3);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input:focus,
+.select:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+}
+
+.input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-3);
+}
+
+select option {
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+/* Search input — has icon padding built in */
+.search-wrap {
+  position: relative;
+}
+
+.search-wrap .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-3);
+  width: 14px;
+  height: 14px;
+}
+
+.search-wrap input {
+  padding-left: 36px;
+}
+
+/* Inline code / invite code display */
+.code-pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PAGE LAYOUT SCAFFOLDING
+   ══════════════════════════════════════════════════════════ */
+
+/* Nav */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8, 9, 12, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: var(--nav-height);
+  gap: 0;
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  text-decoration: none;
+  margin-right: 8px;
+}
+
+.nav-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-right: auto;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2px;
+}
+
+.nav-links a {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all var(--transition);
+}
+
+.nav-links a:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+.nav-links a.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.nav-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  margin-left: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Page content wrapper */
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* Page header — eyebrow + title + optional action */
+.page-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Section — a titled group of related content */
+.section {
+  margin-bottom: 44px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.section-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.icon-accent {
+  background: var(--accent-dim);
+}
+.icon-green {
+  background: var(--green-dim);
+}
+.icon-blue {
+  background: var(--blue-dim);
+}
+.icon-amber {
+  background: var(--amber-dim);
+}
+.icon-red {
+  background: var(--red-dim);
+}
+
+/* Stats grid — 4-up by default */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOG PANEL
+   Used for ESPN sync output, system logs
+   ══════════════════════════════════════════════════════════ */
+
+.log-panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.8;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.log-line {
+  display: flex;
+  gap: 10px;
+}
+.log-time {
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.log-ok {
+  color: var(--green);
+}
+.log-warn {
+  color: var(--amber);
+}
+.log-err {
+  color: var(--red);
+}
+.log-info {
+  color: var(--blue);
+}
+.log-dim {
+  color: var(--text-3);
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOOLTIP
+   data-tip attribute — pure CSS, no JS required
+   ══════════════════════════════════════════════════════════ */
+
+[data-tip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-4);
+  border: 1px solid var(--border-md);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition);
+  z-index: 20;
+}
+
+[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SPINNER
+   ══════════════════════════════════════════════════════════ */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.spinner-lg {
+  width: 20px;
+  height: 20px;
+  border-width: 3px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   EMPTY STATE
+   ══════════════════════════════════════════════════════════ */
+
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.empty-state-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.empty-state p {
+  color: var(--text-3);
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .page {
+    padding: 20px 16px 60px;
+  }
+  .nav {
+    padding: 0 16px;
+  }
+  .nav-links {
+    display: none;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .table th,
+  .table td {
+    padding: 10px 12px;
+  }
+}

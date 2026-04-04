@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme 3 — Underground</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e10;
+    --card: #141416;
+    --card2: #1a1a1d;
+    --border: #232328;
+    --gold: #c9a84c;
+    --gold-dim: rgba(201, 168, 76, 0.15);
+    --text: #f0ede8;
+    --muted: #5a5a62;
+    --green: #5db87e;
+    --red: #c0534a;
+    --blue: #4a7fd4;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    letter-spacing: 0.01em;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .page { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; position: relative; }
+
+  /* Masthead */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .masthead-left {}
+
+  .league-tag {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .week-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  .week-display em {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .masthead-right {
+    text-align: right;
+    padding-top: 8px;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 32px;
+    justify-content: flex-end;
+  }
+
+  .stat { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-val.gold { color: var(--gold); }
+  .stat-val.green { color: var(--green); }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Day group */
+  .day-group { margin-bottom: 36px; }
+
+  .day-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .day-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .day-date {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--border);
+    font-weight: 600;
+  }
+
+  .day-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Game card */
+  .game-card {
+    border: 1px solid var(--border);
+    background: var(--card);
+    margin-bottom: 2px;
+    transition: border-color 0.2s, background 0.2s;
+    animation: appear 0.4s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes appear { to { opacity: 1; } }
+  .game-card:nth-child(1) { animation-delay: 0.08s; }
+  .game-card:nth-child(2) { animation-delay: 0.14s; }
+  .game-card:nth-child(3) { animation-delay: 0.20s; }
+  .game-card:nth-child(4) { animation-delay: 0.26s; }
+
+  .game-card.picked { border-color: rgba(201,168,76,0.3); }
+  .game-card.correct { border-color: rgba(93,184,126,0.35); }
+  .game-card.wrong { border-color: rgba(192,83,74,0.3); }
+  .game-card.live { border-color: rgba(74,127,212,0.4); }
+
+  .game-inner {
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    cursor: pointer;
+  }
+
+  .game-inner:hover .team-side { background: var(--card2); }
+
+  /* Team side */
+  .team-side {
+    padding: 20px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.15s;
+  }
+
+  .team-side.home { flex-direction: row-reverse; text-align: right; }
+
+  .team-side.selected { background: var(--gold-dim) !important; }
+
+  .team-glyph {
+    font-size: 26px;
+    flex-shrink: 0;
+    opacity: 0.9;
+  }
+
+  .team-details {}
+
+  .team-abbr {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .team-name {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .team-record {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-weight: 300;
+  }
+
+  /* Center */
+  .game-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    padding: 10px;
+    gap: 5px;
+    background: var(--card);
+  }
+
+  .meta-status {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .meta-status.live { color: var(--blue); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .meta-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+
+  .meta-spread {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    font-weight: 300;
+  }
+
+  .meta-time {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* Sub-bar */
+  .game-sub {
+    border-top: 1px solid var(--border);
+    padding: 8px 20px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .game-sub.correct { color: var(--green); }
+  .game-sub.wrong { color: var(--red); }
+  .game-sub.live { color: var(--blue); }
+
+  .sub-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 300;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0.5px;
+  }
+
+  /* Pick indicator */
+  .pick-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .pick-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold);
+  }
+
+  /* Standings */
+  .standings {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .standings-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .standings-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .standings-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .standings-row:last-child { border-bottom: none; }
+
+  .s-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .s-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .s-name.me { color: var(--gold); }
+
+  .s-bar {
+    height: 2px;
+    background: var(--border);
+    width: 80px;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .s-bar-fill { height: 100%; background: var(--gold); border-radius: 1px; }
+  .s-bar-fill.me { background: var(--gold); }
+  .s-bar-fill.other { background: var(--muted); }
+
+  .s-pts {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 400;
+    min-width: 32px;
+    text-align: right;
+  }
+
+  .s-pts.leader { color: var(--gold); }
+  .s-pts.me { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-left">
+      <div class="league-tag">The Boys · Season 2024</div>
+      <div class="week-display">Week <em>7</em></div>
+    </div>
+    <div class="masthead-right">
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-val gold">12</div>
+          <div class="stat-label">Points</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">7/13</div>
+          <div class="stat-label">Picked</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val green">#2</div>
+          <div class="stat-label">Rank</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thursday -->
+  <div class="day-group">
+    <div class="day-header">
+      <div class="day-name">Thursday Night</div>
+      <div class="day-date">Oct 17</div>
+      <div class="day-line"></div>
+    </div>
+    <div class="game-card correct">
+      <div class="game-inner">
+        <div class="team-side away selected">
+          <div class="team-glyph">🦅</div>
+          <div class="team-details">
+            <div class="team-abbr">PHI</div>
+            <div class="team-name">Eagles</div>
+            <div class="team-record">5–1</div>
+          </div>
+        </div>
+        <div class="game-meta">
+          <div class="meta-status">Final</div>
+          <div class="meta-score">28–14</div>
+          <div class="meta-spread">PHI –4.5</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-glyph">🐻</div>
+          <div class="team-details">
+            <div class="team-abbr">CHI</div>
+            <div class="team-name">Bears</div>
+            <div class="team-record">2–4</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-sub correct">
+        <div class="pick-indicator"><div class="pick-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div> Correct · +1pt · sole pick bonus +1pt</div>
+        <div class="sub-mono">+2 pts total</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sunday -->
+  <div class="day-group">
+    <div class="day-header">
+      <div class="day-name">Sunday</div>
+      <div class="day-date">Oct 20</div>
+      <div class="day-line"></div>
+    </div>
+
+    <!-- Live -->
+    <div class="game-card live">
+      <div class="game-inner">
+        <div class="team-side away">
+          <div class="team-glyph">👑</div>
+          <div class="team-details">
+            <div class="team-abbr">KC</div>
+            <div class="team-name">Chiefs</div>
+            <div class="team-record">5–0</div>
+          </div>
+        </div>
+        <div class="game-meta" style="border-color:rgba(74,127,212,0.2)">
+          <div class="meta-status live">● Q3 11:42</div>
+          <div class="meta-score">17–21</div>
+          <div class="meta-spread">KC –3.5</div>
+        </div>
+        <div class="team-side home selected">
+          <div class="team-glyph">🪶</div>
+          <div class="team-details">
+            <div class="team-abbr">BAL</div>
+            <div class="team-name">Ravens</div>
+            <div class="team-record">4–2</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-sub live">
+        <div class="pick-indicator"><div class="pick-dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue);animation:pulse 1.5s infinite"></div> Picked BAL · leading</div>
+        <div class="sub-mono">3rd & 4 · Lamar rush 6yds · 1ST</div>
+      </div>
+    </div>
+
+    <!-- Open, no pick -->
+    <div class="game-card">
+      <div class="game-inner">
+        <div class="team-side away">
+          <div class="team-glyph">🦬</div>
+          <div class="team-details">
+            <div class="team-abbr">BUF</div>
+            <div class="team-name">Bills</div>
+            <div class="team-record">5–1</div>
+          </div>
+        </div>
+        <div class="game-meta">
+          <div class="meta-status">1:00 pm</div>
+          <div class="meta-time">ET</div>
+          <div class="meta-spread">BUF –6</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-glyph">✈️</div>
+          <div class="team-details">
+            <div class="team-abbr">NYJ</div>
+            <div class="team-name">Jets</div>
+            <div class="team-record">2–4</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-sub" style="color:var(--muted)">
+        <div>No pick submitted</div>
+        <div class="sub-mono">locks at kickoff</div>
+      </div>
+    </div>
+
+    <!-- Wrong -->
+    <div class="game-card wrong">
+      <div class="game-inner">
+        <div class="team-side away selected">
+          <div class="team-glyph">🔴</div>
+          <div class="team-details">
+            <div class="team-abbr">SF</div>
+            <div class="team-name">49ers</div>
+            <div class="team-record">3–3</div>
+          </div>
+        </div>
+        <div class="game-meta">
+          <div class="meta-status">Final</div>
+          <div class="meta-score">17–24</div>
+          <div class="meta-spread">SF –2</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-glyph">🦅</div>
+          <div class="team-details">
+            <div class="team-abbr">SEA</div>
+            <div class="team-name">Seahawks</div>
+            <div class="team-record">4–2</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-sub wrong">
+        <div class="pick-indicator"><div class="pick-dot" style="background:var(--red);box-shadow:0 0 6px var(--red)"></div> Wrong · upset</div>
+        <div class="sub-mono">0 pts</div>
+      </div>
+    </div>
+
+    <!-- Open, picked -->
+    <div class="game-card picked">
+      <div class="game-inner">
+        <div class="team-side away selected">
+          <div class="team-glyph">🐯</div>
+          <div class="team-details">
+            <div class="team-abbr">CIN</div>
+            <div class="team-name">Bengals</div>
+            <div class="team-record">3–3</div>
+          </div>
+        </div>
+        <div class="game-meta">
+          <div class="meta-status">4:25 pm</div>
+          <div class="meta-time">ET</div>
+          <div class="meta-spread">CIN –1.5</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-glyph">⬛</div>
+          <div class="team-details">
+            <div class="team-abbr">PIT</div>
+            <div class="team-name">Steelers</div>
+            <div class="team-record">4–2</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-sub" style="color:var(--gold)">
+        <div class="pick-indicator"><div class="pick-dot"></div> Picked CIN</div>
+        <div class="sub-mono">awaiting kickoff</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standings -->
+  <div class="standings">
+    <div class="standings-title">Week 7 standings</div>
+    <div class="standings-row">
+      <div class="s-rank">01</div>
+      <div class="s-name">Marcus</div>
+      <div class="s-bar"><div class="s-bar-fill other" style="width:100%"></div></div>
+      <div class="s-pts leader">14</div>
+    </div>
+    <div class="standings-row">
+      <div class="s-rank">02</div>
+      <div class="s-name me">You</div>
+      <div class="s-bar"><div class="s-bar-fill me" style="width:85%"></div></div>
+      <div class="s-pts me">12</div>
+    </div>
+    <div class="standings-row">
+      <div class="s-rank">03</div>
+      <div class="s-name">Taylor</div>
+      <div class="s-bar"><div class="s-bar-fill other" style="width:64%"></div></div>
+      <div class="s-pts" style="color:var(--muted)">9</div>
+    </div>
+    <div class="standings-row">
+      <div class="s-rank">04</div>
+      <div class="s-name">Alex</div>
+      <div class="s-bar"><div class="s-bar-fill other" style="width:57%"></div></div>
+      <div class="s-pts" style="color:var(--muted)">8</div>
+    </div>
+    <div class="standings-row">
+      <div class="s-rank">05</div>
+      <div class="s-name">Morgan</div>
+      <div class="s-bar"><div class="s-bar-fill other" style="width:42%"></div></div>
+      <div class="s-pts" style="color:var(--muted)">6</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

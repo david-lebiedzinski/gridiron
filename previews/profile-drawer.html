@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridiron — Profile Drawer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #080a0f;
+  --card:   #0d1117;
+  --card2:  #111820;
+  --border: #1e2733;
+  --accent: #f5a623;
+  --me:     #6aa3ff;
+  --text:   #e8eaf0;
+  --muted:  #4a5568;
+  --green:  #22c55e;
+  --red:    #ef4444;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Fake app shell behind drawer ── */
+.app-bg {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+}
+
+.fake-nav {
+  height: 54px; border-bottom: 1px solid var(--border);
+  background: rgba(8,10,15,0.97);
+  display: flex; align-items: center;
+  justify-content: space-between; padding: 0 20px;
+  flex-shrink: 0; position: relative; z-index: 10;
+}
+
+.fake-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 3px; color: var(--accent);
+}
+
+.fake-nav-links { display: flex; gap: 4px; }
+
+.fake-nav-btn {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 3px;
+  border: 1px solid transparent; background: transparent;
+  color: var(--muted);
+}
+
+.fake-nav-right { display: flex; align-items: center; gap: 8px; }
+
+.trigger-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #1a2a4a; border: 2.5px solid #004C54;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  font-weight: 700; color: var(--me);
+  cursor: pointer; transition: border-color 0.15s;
+  position: relative; z-index: 11;
+  overflow: hidden;
+}
+
+.trigger-avatar:hover { border-color: var(--accent); }
+
+.trigger-avatar img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.fake-content {
+  flex: 1; padding: 20px;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px;
+}
+
+.open-hint {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); text-align: center;
+}
+
+.open-arrow {
+  font-size: 24px; color: var(--muted);
+  animation: bounce 1.5s ease infinite;
+}
+
+@keyframes bounce {
+  0%,100% { transform: translateX(0); }
+  50%      { transform: translateX(6px); }
+}
+
+/* ── Drawer overlay ── */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0); z-index: 200;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.drawer-overlay.open {
+  background: rgba(0,0,0,0.6);
+  pointer-events: all;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Drawer panel ── */
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 100%;
+  max-width: 320px;
+  background: #0a0d14;
+  border-left: 1px solid var(--border);
+  z-index: 201;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.drawer.open { transform: translateX(0); }
+
+/* ── Drawer header ── */
+.drawer-header {
+  padding: 16px 16px 0;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: flex-end;
+}
+
+.drawer-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--card2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted); font-size: 14px;
+  transition: all 0.15s;
+}
+.drawer-close:hover { color: var(--text); border-color: #4a5568; }
+
+/* ── Drawer scroll area ── */
+.drawer-scroll {
+  flex: 1; overflow-y: auto; padding: 0 0 24px;
+  scrollbar-width: thin; scrollbar-color: #1e2733 transparent;
+}
+.drawer-scroll::-webkit-scrollbar { width: 3px; }
+.drawer-scroll::-webkit-scrollbar-thumb { background: #1e2733; border-radius: 2px; }
+
+/* ── Profile hero ── */
+.profile-hero {
+  padding: 16px 16px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+/* Team color accent top bar */
+.profile-hero::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #004C54, transparent);
+}
+
+.hero-avatar-row {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 16px;
+}
+
+.hero-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 2.5px solid #004C54;
+  box-shadow: 0 0 14px rgba(0,76,84,0.35);
+  overflow: hidden; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #1a2a4a;
+  font-family: 'Oswald', sans-serif; font-size: 22px;
+  font-weight: 700; color: var(--me);
+  position: relative;
+}
+
+.hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Edit overlay on avatar */
+.avatar-edit-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s; cursor: pointer;
+  font-size: 16px; border-radius: 50%;
+}
+
+.hero-avatar:hover .avatar-edit-overlay { opacity: 1; }
+
+.hero-info { flex: 1; min-width: 0; }
+
+.hero-username {
+  font-family: 'Oswald', sans-serif; font-size: 18px;
+  font-weight: 700; letter-spacing: 0.5px; line-height: 1;
+  color: var(--text);
+}
+
+.hero-handle {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--muted); font-weight: 300; margin-top: 3px;
+}
+
+.hero-team {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 5px;
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: #004C54;
+}
+
+.hero-team-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #004C54; flex-shrink: 0;
+}
+
+/* Season stats strip */
+.stats-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--border);
+  border-radius: 6px; overflow: hidden;
+}
+
+.stat-cell {
+  background: var(--card2);
+  padding: 10px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+
+.stat-cell-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 1px; line-height: 1;
+}
+
+.stat-cell-val.accent { color: var(--accent); }
+.stat-cell-val.me     { color: var(--me); }
+.stat-cell-val.green  { color: var(--green); }
+
+.stat-cell-label {
+  font-family: 'Oswald', sans-serif; font-size: 7px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+}
+
+/* ── Sections ── */
+.drawer-section {
+  padding: 16px 16px 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.drawer-section:last-child { border-bottom: none; }
+
+.section-label {
+  font-family: 'Oswald', sans-serif; font-size: 8px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+/* ── League list ── */
+.league-list { display: flex; flex-direction: column; gap: 4px; }
+
+.league-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer; transition: all 0.15s;
+  background: transparent;
+}
+
+.league-row:hover { background: var(--card2); border-color: var(--border); }
+
+.league-row.active {
+  background: rgba(106,163,255,0.06);
+  border-color: rgba(106,163,255,0.2);
+}
+
+.league-indicator {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.league-indicator.active { background: var(--me); box-shadow: 0 0 5px rgba(106,163,255,0.5); }
+.league-indicator.inactive { background: var(--border); }
+
+.league-info { flex: 1; min-width: 0; }
+
+.league-name {
+  font-family: 'Oswald', sans-serif; font-size: 13px;
+  font-weight: 600; letter-spacing: 0.3px;
+}
+
+.league-name.active { color: var(--me); }
+
+.league-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--muted); font-weight: 300; margin-top: 1px;
+}
+
+.league-pts {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 1px;
+  color: var(--muted);
+}
+
+.league-pts.active { color: var(--text); }
+
+/* Join league row */
+.join-league-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 6px;
+  border: 1px dashed var(--border);
+  cursor: pointer; transition: all 0.15s;
+  color: var(--muted); margin-top: 4px;
+}
+
+.join-league-row:hover { border-color: #4a5568; color: var(--text); }
+
+.join-league-label {
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  letter-spacing: 1px;
+}
+
+/* Join code input (hidden by default) */
+.join-code-wrap {
+  display: none; margin-top: 8px;
+}
+
+.join-code-wrap.visible { display: flex; gap: 6px; }
+
+.join-code-input {
+  flex: 1; padding: 8px 12px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--text);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; letter-spacing: 3px; text-align: center;
+  outline: none; text-transform: uppercase;
+  transition: border-color 0.15s;
+}
+
+.join-code-input:focus { border-color: var(--accent); }
+.join-code-input::placeholder { color: #2a3a4a; font-size: 13px; letter-spacing: 2px; }
+
+.join-code-btn {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 8px 12px; border-radius: 5px;
+  border: none; background: var(--accent);
+  color: #0a0600; cursor: pointer; font-weight: 700;
+  transition: all 0.15s; white-space: nowrap;
+}
+
+.join-code-btn:hover { background: #e09010; }
+
+/* ── Nav items ── */
+.nav-items { display: flex; flex-direction: column; gap: 2px; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border-radius: 6px;
+  cursor: pointer; transition: all 0.15s;
+  text-decoration: none;
+}
+
+.nav-item:hover { background: var(--card2); }
+
+.nav-item-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--card2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+}
+
+.nav-item-label {
+  font-family: 'Oswald', sans-serif; font-size: 13px;
+  font-weight: 600; letter-spacing: 0.5px; flex: 1;
+  color: var(--text);
+}
+
+.nav-item-arrow {
+  font-size: 10px; color: var(--muted);
+}
+
+/* Commissioner badge on nav item */
+.nav-item-badge {
+  font-family: 'Oswald', sans-serif; font-size: 7px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: #a855f7; background: rgba(168,85,247,0.1);
+  border: 1px solid rgba(168,85,247,0.2);
+  padding: 2px 6px; border-radius: 2px;
+}
+
+/* ── Theme intensity ── */
+.intensity-options {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+}
+
+.intensity-btn {
+  padding: 8px 4px; border-radius: 5px;
+  border: 1px solid var(--border); background: var(--card2);
+  cursor: pointer; transition: all 0.15s; text-align: center;
+}
+
+.intensity-btn:hover { border-color: #4a5568; }
+
+.intensity-btn.active {
+  border-color: var(--accent);
+  background: rgba(245,166,35,0.08);
+}
+
+.intensity-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); display: block; margin-top: 3px;
+}
+
+.intensity-btn.active .intensity-label { color: var(--accent); }
+
+.intensity-icon { font-size: 14px; display: block; }
+
+/* ── Sign out ── */
+.signout-btn {
+  width: 100%; padding: 11px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 6px; color: var(--muted);
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+.signout-btn:hover { color: var(--red); border-color: rgba(239,68,68,0.3); }
+
+/* ── Responsive ── */
+@media (min-width: 640px) {
+  .drawer { box-shadow: -20px 0 60px rgba(0,0,0,0.5); }
+}
+</style>
+</head>
+<body>
+
+<!-- Fake app behind drawer -->
+<div class="app-bg">
+  <div class="fake-nav">
+    <div class="fake-logo">GRIDIRON</div>
+    <div class="fake-nav-links">
+      <div class="fake-nav-btn">Picks</div>
+      <div class="fake-nav-btn">Grid</div>
+      <div class="fake-nav-btn">Leaderboard</div>
+    </div>
+    <div class="fake-nav-right">
+      <span style="font-family:'Oswald',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px">The Boys</span>
+      <!-- Avatar trigger -->
+      <div class="trigger-avatar" onclick="openDrawer()" title="Open profile">
+        JD
+      </div>
+    </div>
+  </div>
+
+  <div class="fake-content">
+    <div class="open-arrow">→</div>
+    <div class="open-hint">Tap the avatar to open the profile drawer</div>
+  </div>
+</div>
+
+<!-- Drawer overlay -->
+<div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+<!-- Drawer -->
+<div class="drawer" id="drawer">
+
+  <!-- Close button -->
+  <div class="drawer-header">
+    <div class="drawer-close" onclick="closeDrawer()">✕</div>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="drawer-scroll">
+
+    <!-- ── Profile hero ── -->
+    <div class="profile-hero">
+      <div class="hero-avatar-row">
+        <div class="hero-avatar">
+          JD
+          <div class="avatar-edit-overlay" title="Change photo">✏️</div>
+        </div>
+        <div class="hero-info">
+          <div class="hero-username">Jordan D.</div>
+          <div class="hero-handle">@jordan</div>
+          <div class="hero-team">
+            <div class="hero-team-dot"></div>
+            Eagles fan
+          </div>
+        </div>
+      </div>
+
+      <!-- Season stats -->
+      <div class="stats-strip">
+        <div class="stat-cell">
+          <div class="stat-cell-val me">187</div>
+          <div class="stat-cell-label">Season pts</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-val accent">#2</div>
+          <div class="stat-cell-label">Rank</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-val green">🔥 4</div>
+          <div class="stat-cell-label">Streak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Leagues ── -->
+    <div class="drawer-section">
+      <div class="section-label">My leagues</div>
+      <div class="league-list">
+
+        <!-- Active league -->
+        <div class="league-row active" onclick="switchLeague('the-boys')">
+          <div class="league-indicator active"></div>
+          <div class="league-info">
+            <div class="league-name active">The Boys</div>
+            <div class="league-meta">2024 · Wk 7 · 10 members</div>
+          </div>
+          <div class="league-pts active">187</div>
+        </div>
+
+        <!-- Second league -->
+        <div class="league-row" onclick="switchLeague('work-league')">
+          <div class="league-indicator inactive"></div>
+          <div class="league-info">
+            <div class="league-name">Work League</div>
+            <div class="league-meta">2024 · Wk 7 · 8 members</div>
+          </div>
+          <div class="league-pts">142</div>
+        </div>
+
+        <!-- Join league -->
+        <div class="join-league-row" onclick="toggleJoinCode()">
+          <div style="font-size:14px">+</div>
+          <div class="join-league-label">Join another league</div>
+        </div>
+
+        <!-- Code input (hidden) -->
+        <div class="join-code-wrap" id="join-code-wrap">
+          <input class="join-code-input" type="text" placeholder="XXXX-XXXX"
+            maxlength="9" oninput="formatJoinCode(this)" id="join-code-input">
+          <button class="join-code-btn" onclick="submitCode()">Join</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Navigation ── -->
+    <div class="drawer-section">
+      <div class="section-label">Account</div>
+      <div class="nav-items">
+
+        <div class="nav-item" onclick="navigate('profile')">
+          <div class="nav-item-icon">👤</div>
+          <div class="nav-item-label">Edit Profile</div>
+          <div class="nav-item-arrow">›</div>
+        </div>
+
+        <div class="nav-item" onclick="navigate('analytics')">
+          <div class="nav-item-icon">📊</div>
+          <div class="nav-item-label">My Analytics</div>
+          <div class="nav-item-arrow">›</div>
+        </div>
+
+        <div class="nav-item" onclick="navigate('commissioner')">
+          <div class="nav-item-icon">⚙️</div>
+          <div class="nav-item-label">Commissioner</div>
+          <div class="nav-item-badge">⚙ Commissioner</div>
+          <div class="nav-item-arrow">›</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Theme intensity ── -->
+    <div class="drawer-section">
+      <div class="section-label">Theme effects</div>
+      <div class="intensity-options">
+        <div class="intensity-btn" onclick="setIntensity(this, 'off')">
+          <span class="intensity-icon">○</span>
+          <span class="intensity-label">Off</span>
+        </div>
+        <div class="intensity-btn" onclick="setIntensity(this, 'subtle')">
+          <span class="intensity-icon">◔</span>
+          <span class="intensity-label">Subtle</span>
+        </div>
+        <div class="intensity-btn active" onclick="setIntensity(this, 'normal')">
+          <span class="intensity-icon">◑</span>
+          <span class="intensity-label">Normal</span>
+        </div>
+        <div class="intensity-btn" onclick="setIntensity(this, 'full')">
+          <span class="intensity-icon">●</span>
+          <span class="intensity-label">Full</span>
+        </div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);font-weight:300;margin-top:8px">
+        Particles run on game days (Thu/Sun/Mon)
+      </div>
+    </div>
+
+    <!-- ── Sign out ── -->
+    <div class="drawer-section">
+      <button class="signout-btn" onclick="confirmSignout()">
+        ↩ Sign out
+      </button>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#1e2733;margin-top:8px;text-align:center;font-weight:300">
+        v1.0.0 · The Boys League
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:#1a2233;border:1px solid #2a3a4a;color:#e8eaf0;
+  font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1.5px;
+  text-transform:uppercase;padding:10px 20px;border-radius:4px;
+  z-index:500;transition:transform 0.25s,opacity 0.25s;opacity:0;
+  white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);
+"></div>
+
+<script>
+// ── Drawer open/close ─────────────────────────────────────────
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDrawer();
+});
+
+// ── League switcher ───────────────────────────────────────────
+function switchLeague(id) {
+  document.querySelectorAll('.league-row').forEach(r => {
+    r.classList.remove('active');
+    r.querySelector('.league-indicator')?.classList.replace('active','inactive');
+    r.querySelector('.league-name')?.classList.remove('active');
+    r.querySelector('.league-pts')?.classList.remove('active');
+  });
+
+  const clicked = event.currentTarget;
+  clicked.classList.add('active');
+  clicked.querySelector('.league-indicator')?.classList.replace('inactive','active');
+  clicked.querySelector('.league-name')?.classList.add('active');
+  clicked.querySelector('.league-pts')?.classList.add('active');
+
+  const name = clicked.querySelector('.league-name')?.textContent;
+  showToast(`Switched to ${name}`, 'success');
+  setTimeout(closeDrawer, 800);
+}
+
+// ── Join code toggle ──────────────────────────────────────────
+function toggleJoinCode() {
+  const wrap = document.getElementById('join-code-wrap');
+  wrap.classList.toggle('visible');
+  if (wrap.classList.contains('visible')) {
+    document.getElementById('join-code-input').focus();
+  }
+}
+
+function formatJoinCode(input) {
+  let val = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4,8);
+  input.value = val;
+}
+
+function submitCode() {
+  const code = document.getElementById('join-code-input').value;
+  if (code.length < 9) {
+    document.getElementById('join-code-input').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('join-code-input').style.borderColor = '', 1500);
+    return;
+  }
+  showToast('Joined league!', 'success');
+  document.getElementById('join-code-wrap').classList.remove('visible');
+  document.getElementById('join-code-input').value = '';
+}
+
+// ── Navigation ────────────────────────────────────────────────
+function navigate(page) {
+  closeDrawer();
+  showToast(`→ /${page}`, 'info');
+}
+
+// ── Intensity ─────────────────────────────────────────────────
+function setIntensity(btn, level) {
+  document.querySelectorAll('.intensity-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast(`Theme: ${level}`, 'success');
+}
+
+// ── Sign out ──────────────────────────────────────────────────
+function confirmSignout() {
+  if (confirm('Sign out of Gridiron?')) {
+    showToast('Signed out', 'info');
+    setTimeout(closeDrawer, 600);
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.borderColor = type === 'success' ? 'rgba(34,197,94,0.4)'
+    : type === 'error' ? 'rgba(239,68,68,0.4)' : 'rgba(245,166,35,0.3)';
+  toast.style.color = type === 'success' ? '#4ade80'
+    : type === 'error' ? '#f87171' : '#f5a623';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  toast.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(60px)';
+    toast.style.opacity = '0';
+  }, 2000);
+}
+
+// Auto-open for demo
+setTimeout(openDrawer, 400);
+</script>
+</body>
+</html>

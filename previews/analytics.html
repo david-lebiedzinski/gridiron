@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridiron — Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #080a0f;
+  --card:   #0d1117;
+  --card2:  #111820;
+  --border: #1e2733;
+  --accent: #f5a623;
+  --me:     #6aa3ff;
+  --text:   #e8eaf0;
+  --muted:  #4a5568;
+  --green:  #22c55e;
+  --red:    #ef4444;
+  --silver: #c8cdd6;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+/* ── Nav ── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,10,15,0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+.nav-back {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; border: none;
+  background: none; display: flex; align-items: center; gap: 6px;
+}
+.nav-back:hover { color: var(--text); }
+.nav-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 3px; color: var(--accent);
+}
+.nav-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #1a2a4a; border: 2px solid #004C54;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  font-weight: 600; color: var(--me);
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 24px 16px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 120px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,76,84,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-avatar-wrap {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 20px;
+}
+
+.hero-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  border: 2.5px solid #004C54;
+  box-shadow: 0 0 16px rgba(0,76,84,0.4);
+  background: #1a2a4a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 20px;
+  font-weight: 700; color: var(--me);
+  overflow: hidden; flex-shrink: 0;
+}
+
+.hero-meta { flex: 1; }
+.hero-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: 2px; line-height: 1;
+}
+.hero-league {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.hero-rank-badge {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(245,166,35,0.08);
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: 8px; padding: 8px 14px;
+}
+.hero-rank-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; color: var(--accent); line-height: 1; letter-spacing: 1px;
+}
+.hero-rank-label {
+  font-family: 'Oswald', sans-serif; font-size: 8px;
+  letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
+}
+
+/* ── Narrative card ── */
+.narrative-card {
+  margin: 0 16px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.narrative-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 3px; height: 100%;
+  background: var(--accent);
+  border-radius: 10px 0 0 10px;
+}
+
+.narrative-tag {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+
+.narrative-headline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 1px; line-height: 1.1;
+  color: var(--text); margin-bottom: 8px;
+}
+
+.narrative-body {
+  font-size: 13px; color: #8a9ab0; line-height: 1.5;
+}
+
+.narrative-body strong { color: var(--text); font-weight: 500; }
+
+/* ── Section headers ── */
+.section {
+  padding: 16px 16px 0;
+}
+
+.section-title {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Stat cards ── */
+.stat-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover, .stat-card:active {
+  border-color: #3a4a5a;
+  background: var(--card2);
+}
+
+.stat-card.full-width { grid-column: 1 / -1; }
+
+.stat-card-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+
+.stat-card-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; letter-spacing: 1px; line-height: 1;
+  color: var(--text);
+}
+
+.stat-card-value.green  { color: var(--green); }
+.stat-card-value.red    { color: var(--red); }
+.stat-card-value.accent { color: var(--accent); }
+.stat-card-value.me     { color: var(--me); }
+.stat-card-value.silver { color: var(--silver); }
+
+.stat-card-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--muted); margin-top: 4px; font-weight: 300;
+}
+
+.stat-tap-hint {
+  position: absolute; bottom: 8px; right: 10px;
+  font-family: 'Oswald', sans-serif; font-size: 8px;
+  letter-spacing: 1px; color: #2a3a4a; text-transform: uppercase;
+}
+
+/* ── Streak bar ── */
+.streak-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px; margin-bottom: 8px;
+}
+
+.streak-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+
+.streak-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+}
+
+.streak-val {
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px;
+}
+
+.streak-bar {
+  display: flex; gap: 3px; flex-wrap: wrap;
+}
+
+.streak-dot {
+  width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+}
+.streak-dot.correct { background: rgba(34,197,94,0.7); }
+.streak-dot.wrong   { background: rgba(239,68,68,0.35); }
+.streak-dot.current-correct { background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.6); }
+.streak-dot.current-wrong   { background: var(--red);   box-shadow: 0 0 4px rgba(239,68,68,0.5); }
+
+/* ── Time slot bars ── */
+.time-slot-row {
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.slot-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 14px;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.slot-item:hover { border-color: #3a4a5a; }
+
+.slot-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+
+.slot-name {
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+
+.slot-record {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  font-weight: 300; color: var(--muted);
+}
+
+.slot-bar-wrap { position: relative; height: 5px; background: var(--border); border-radius: 3px; }
+.slot-bar-fill {
+  position: absolute; top: 0; left: 0; height: 100%;
+  border-radius: 3px; transition: width 0.6s ease;
+}
+.slot-bar-fill.great  { background: rgba(34,197,94,0.7); }
+.slot-bar-fill.good   { background: rgba(34,197,94,0.45); }
+.slot-bar-fill.mid    { background: rgba(245,166,35,0.5); }
+.slot-bar-fill.poor   { background: rgba(239,68,68,0.4); }
+
+.slot-win-pct {
+  font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 1px;
+}
+
+/* ── Team tendency rows ── */
+.team-rows { display: flex; flex-direction: column; gap: 4px; }
+
+.team-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 12px;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.team-row:hover { border-color: #3a4a5a; }
+
+.team-badge {
+  width: 36px; height: 36px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 13px;
+  letter-spacing: 0.5px; color: rgba(255,255,255,0.9); flex-shrink: 0;
+}
+
+.team-row-info { flex: 1; min-width: 0; }
+.team-row-name {
+  font-family: 'Oswald', sans-serif; font-size: 13px;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+.team-row-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--muted); font-weight: 300; margin-top: 1px;
+}
+
+.team-row-stat {
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  letter-spacing: 1px; text-align: right;
+}
+.team-row-stat.green { color: var(--green); }
+.team-row-stat.red   { color: var(--red); }
+.team-row-stat.muted { color: var(--muted); }
+
+/* ── H2H ── */
+.h2h-rows { display: flex; flex-direction: column; gap: 4px; }
+
+.h2h-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 14px;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.h2h-row:hover { border-color: #3a4a5a; }
+
+.h2h-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  font-weight: 700; flex-shrink: 0; border: 2px solid transparent;
+}
+
+.h2h-name {
+  flex: 1; font-family: 'Oswald', sans-serif;
+  font-size: 14px; font-weight: 600;
+}
+
+.h2h-record {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  font-weight: 300; color: var(--muted); text-align: right;
+}
+
+.h2h-bar {
+  width: 80px; height: 4px; border-radius: 2px;
+  background: var(--border); overflow: hidden;
+}
+.h2h-bar-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* ── Chart containers ── */
+.chart-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; margin-bottom: 8px;
+}
+
+.chart-card-title {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.chart-card-title span {
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  letter-spacing: 1px; color: var(--text);
+}
+
+canvas { max-height: 180px; }
+
+/* ── Drill drawer ── */
+.drill-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 200; display: none; align-items: flex-end;
+}
+.drill-overlay.open { display: flex; }
+
+.drill-drawer {
+  background: #0d1117; border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0; width: 100%;
+  max-height: 70vh; overflow-y: auto;
+  padding: 0 0 32px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+.drill-overlay.open .drill-drawer { transform: translateY(0); }
+
+.drill-handle {
+  width: 36px; height: 3px; border-radius: 2px;
+  background: var(--border); margin: 12px auto 16px;
+}
+
+.drill-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  letter-spacing: 2px; padding: 0 16px 4px;
+}
+
+.drill-subtitle {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
+  padding: 0 16px 14px;
+}
+
+.drill-picks { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
+
+.drill-pick-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px; border-radius: 6px;
+}
+.drill-pick-row.correct { background: rgba(34,197,94,0.06); }
+.drill-pick-row.wrong   { background: rgba(239,68,68,0.04); opacity: 0.6; }
+
+.drill-pick-game {
+  flex: 1; font-family: 'Oswald', sans-serif;
+  font-size: 13px; font-weight: 500;
+}
+.drill-pick-game .sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--muted); font-weight: 300; display: block;
+}
+
+.drill-pick-result {
+  font-family: 'Bebas Neue', sans-serif; font-size: 16px;
+  letter-spacing: 1px;
+}
+.drill-pick-result.correct { color: var(--green); }
+.drill-pick-result.wrong   { color: var(--red); }
+
+.drill-pick-pts {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--muted); font-weight: 300; min-width: 32px; text-align: right;
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <button class="nav-back" onclick="history.back()">← Back</button>
+  <div class="nav-title">ANALYTICS</div>
+  <div class="nav-avatar">JD</div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-avatar-wrap">
+    <div class="hero-avatar">JD</div>
+    <div class="hero-meta">
+      <div class="hero-name">Jordan D.</div>
+      <div class="hero-league">The Boys · 2024 Season</div>
+    </div>
+    <div class="hero-rank-badge">
+      <div class="hero-rank-num">#2</div>
+      <div class="hero-rank-label">of 10</div>
+    </div>
+  </div>
+</div>
+
+<!-- Narrative headline -->
+<div class="section">
+  <div class="narrative-card" id="narrative-card">
+    <div class="narrative-tag">📖 Season story</div>
+    <div class="narrative-headline" id="narrative-headline">You're the league contrarian — and it's paying off.</div>
+    <div class="narrative-body" id="narrative-body">
+      <strong>62% of your correct picks</strong> were ones nobody else got right. You're sitting <strong>#2 overall</strong> largely because you go against the crowd — and you're usually right. Thursday nights are your weakness though: <strong>3–7 all time</strong>, worst slot in your game.
+    </div>
+  </div>
+</div>
+
+<!-- Season at a glance -->
+<div class="section">
+  <div class="section-title">Season at a glance</div>
+  <div class="stat-row">
+    <div class="stat-card" onclick="openDrill('record')">
+      <div class="stat-card-label">Record</div>
+      <div class="stat-card-value green">112–54</div>
+      <div class="stat-card-sub">67.5% correct</div>
+      <div class="stat-tap-hint">tap ↗</div>
+    </div>
+    <div class="stat-card" onclick="openDrill('points')">
+      <div class="stat-card-label">Total points</div>
+      <div class="stat-card-value accent">187</div>
+      <div class="stat-card-sub">14.4 avg / week</div>
+      <div class="stat-tap-hint">tap ↗</div>
+    </div>
+    <div class="stat-card" onclick="openDrill('upsets')">
+      <div class="stat-card-label">Upset picks</div>
+      <div class="stat-card-value me">11</div>
+      <div class="stat-card-sub">6 correct · 55%</div>
+      <div class="stat-tap-hint">tap ↗</div>
+    </div>
+    <div class="stat-card" onclick="openDrill('contrarian')">
+      <div class="stat-card-label">Sole correct</div>
+      <div class="stat-card-value silver">23</div>
+      <div class="stat-card-sub">best in league</div>
+      <div class="stat-tap-hint">tap ↗</div>
+    </div>
+    <div class="stat-card" onclick="openDrill('weekly-wins')">
+      <div class="stat-card-label">Weekly bonuses</div>
+      <div class="stat-card-value accent">4</div>
+      <div class="stat-card-sub">+8pts earned</div>
+      <div class="stat-tap-hint">tap ↗</div>
+    </div>
+    <div class="stat-card" onclick="openDrill('playoff')">
+      <div class="stat-card-label">Playoff pts</div>
+      <div class="stat-card-value silver">42</div>
+      <div class="stat-card-sub">22% of total</div>
+      <div class="stat-tap-hint">tap ↗</div>
+    </div>
+  </div>
+</div>
+
+<!-- Streak -->
+<div class="section">
+  <div class="section-title">Current streak</div>
+  <div class="streak-card" onclick="openDrill('streak')">
+    <div class="streak-header">
+      <div>
+        <div class="streak-label">Hot streak</div>
+        <div class="streak-val" style="color:var(--green)">🔥 4 correct</div>
+      </div>
+      <div style="text-align:right">
+        <div class="streak-label">Longest this season</div>
+        <div class="streak-val" style="color:var(--accent)">9 in a row</div>
+      </div>
+    </div>
+    <!-- Last 20 picks as dots -->
+    <div class="streak-bar" id="streak-bar"></div>
+  </div>
+</div>
+
+<!-- Points per week chart -->
+<div class="section">
+  <div class="section-title">Points per week</div>
+  <div class="chart-card">
+    <div class="chart-card-title">
+      Weekly breakdown
+      <span>187 total</span>
+    </div>
+    <canvas id="weeklyChart"></canvas>
+  </div>
+</div>
+
+<!-- Time slot performance -->
+<div class="section">
+  <div class="section-title">Time slot performance</div>
+  <div class="time-slot-row">
+    <div class="slot-item" onclick="openDrill('slot-snf')">
+      <div class="slot-header">
+        <div class="slot-name">Sunday Night Football</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="slot-record">14–4</div>
+          <div class="slot-win-pct" style="color:var(--green)">78%</div>
+        </div>
+      </div>
+      <div class="slot-bar-wrap"><div class="slot-bar-fill great" style="width:78%"></div></div>
+    </div>
+    <div class="slot-item" onclick="openDrill('slot-div')">
+      <div class="slot-header">
+        <div class="slot-name">Sunday 4:30pm</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="slot-record">22–9</div>
+          <div class="slot-win-pct" style="color:var(--green)">71%</div>
+        </div>
+      </div>
+      <div class="slot-bar-wrap"><div class="slot-bar-fill good" style="width:71%"></div></div>
+    </div>
+    <div class="slot-item" onclick="openDrill('slot-playoffs')">
+      <div class="slot-header">
+        <div class="slot-name">Playoffs</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="slot-record">9–5</div>
+          <div class="slot-win-pct" style="color:var(--accent)">64%</div>
+        </div>
+      </div>
+      <div class="slot-bar-wrap"><div class="slot-bar-fill mid" style="width:64%"></div></div>
+    </div>
+    <div class="slot-item" onclick="openDrill('slot-early')">
+      <div class="slot-header">
+        <div class="slot-name">Sunday 1:00pm</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="slot-record">38–20</div>
+          <div class="slot-win-pct" style="color:var(--accent)">65%</div>
+        </div>
+      </div>
+      <div class="slot-bar-wrap"><div class="slot-bar-fill mid" style="width:65%"></div></div>
+    </div>
+    <div class="slot-item" onclick="openDrill('slot-mnf')">
+      <div class="slot-header">
+        <div class="slot-name">Monday Night Football</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="slot-record">10–6</div>
+          <div class="slot-win-pct" style="color:var(--accent)">63%</div>
+        </div>
+      </div>
+      <div class="slot-bar-wrap"><div class="slot-bar-fill mid" style="width:63%"></div></div>
+    </div>
+    <div class="slot-item" onclick="openDrill('slot-tnf')">
+      <div class="slot-header">
+        <div class="slot-name">Thursday Night Football</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="slot-record">3–7</div>
+          <div class="slot-win-pct" style="color:var(--red)">30%</div>
+        </div>
+      </div>
+      <div class="slot-bar-wrap"><div class="slot-bar-fill poor" style="width:30%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Win rate by team chart -->
+<div class="section" style="padding-top:16px">
+  <div class="section-title">Upset pick chart</div>
+  <div class="chart-card">
+    <div class="chart-card-title">
+      Upsets attempted vs hit
+      <span>6/11 hit</span>
+    </div>
+    <canvas id="upsetChart"></canvas>
+  </div>
+</div>
+
+<!-- Best / worst teams to pick -->
+<div class="section">
+  <div class="section-title">Team tendencies</div>
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <button class="team-tab active" id="tab-best" onclick="showTeamTab('best')"
+      style="flex:1;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px;border-radius:4px;border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:var(--green);cursor:pointer">
+      Best picks
+    </button>
+    <button class="team-tab" id="tab-worst" onclick="showTeamTab('worst')"
+      style="flex:1;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
+      Worst picks
+    </button>
+  </div>
+
+  <div class="team-rows" id="team-rows-best">
+    <div class="team-row" onclick="openDrill('team-PHI')">
+      <div class="team-badge" style="background:#004C54">PHI</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Eagles</div>
+        <div class="team-row-sub">12 picks · 10 correct</div>
+      </div>
+      <div class="team-row-stat green">83%</div>
+    </div>
+    <div class="team-row" onclick="openDrill('team-KC')">
+      <div class="team-badge" style="background:#E31837">KC</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Chiefs</div>
+        <div class="team-row-sub">11 picks · 9 correct</div>
+      </div>
+      <div class="team-row-stat green">82%</div>
+    </div>
+    <div class="team-row" onclick="openDrill('team-BAL')">
+      <div class="team-badge" style="background:#241773">BAL</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Ravens</div>
+        <div class="team-row-sub">9 picks · 7 correct</div>
+      </div>
+      <div class="team-row-stat green">78%</div>
+    </div>
+    <div class="team-row" onclick="openDrill('team-DET')">
+      <div class="team-badge" style="background:#0076B6">DET</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Lions</div>
+        <div class="team-row-sub">8 picks · 6 correct</div>
+      </div>
+      <div class="team-row-stat green">75%</div>
+    </div>
+  </div>
+
+  <div class="team-rows" id="team-rows-worst" style="display:none">
+    <div class="team-row" onclick="openDrill('team-CHI')">
+      <div class="team-badge" style="background:#0B1C3E">CHI</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Bears</div>
+        <div class="team-row-sub">7 picks · 1 correct</div>
+      </div>
+      <div class="team-row-stat red">14%</div>
+    </div>
+    <div class="team-row" onclick="openDrill('team-NE')">
+      <div class="team-badge" style="background:#002244">NE</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Patriots</div>
+        <div class="team-row-sub">6 picks · 1 correct</div>
+      </div>
+      <div class="team-row-stat red">17%</div>
+    </div>
+    <div class="team-row" onclick="openDrill('team-LAC')">
+      <div class="team-badge" style="background:#0080C6">LAC</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Chargers</div>
+        <div class="team-row-sub">8 picks · 2 correct</div>
+      </div>
+      <div class="team-row-stat red">25%</div>
+    </div>
+    <div class="team-row" onclick="openDrill('team-NYJ')">
+      <div class="team-badge" style="background:#125740">NYJ</div>
+      <div class="team-row-info">
+        <div class="team-row-name">Jets</div>
+        <div class="team-row-sub">5 picks · 1 correct</div>
+      </div>
+      <div class="team-row-stat red">20%</div>
+    </div>
+  </div>
+</div>
+
+<!-- Head to head -->
+<div class="section">
+  <div class="section-title">Head to head</div>
+  <div class="h2h-rows">
+    <div class="h2h-row" onclick="openDrill('h2h-taylor')">
+      <div class="h2h-avatar" style="background:#3a1a1a;color:#f87171;border-color:#f87171">TR</div>
+      <div class="h2h-name">Taylor</div>
+      <div>
+        <div class="h2h-bar"><div class="h2h-bar-fill" style="width:75%;background:var(--green)"></div></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;text-align:right;font-weight:300">12W–4L–2T</div>
+      </div>
+    </div>
+    <div class="h2h-row" onclick="openDrill('h2h-morgan')">
+      <div class="h2h-avatar" style="background:#1a2a1a;color:#86efac;border-color:#86efac">MO</div>
+      <div class="h2h-name">Morgan</div>
+      <div>
+        <div class="h2h-bar"><div class="h2h-bar-fill" style="width:70%;background:var(--green)"></div></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;text-align:right;font-weight:300">11W–5L–2T</div>
+      </div>
+    </div>
+    <div class="h2h-row" onclick="openDrill('h2h-jordan')">
+      <div class="h2h-avatar" style="background:#2a2a1a;color:#fde68a;border-color:#fde68a">JR</div>
+      <div class="h2h-name">Jordan</div>
+      <div>
+        <div class="h2h-bar"><div class="h2h-bar-fill" style="width:65%;background:var(--green)"></div></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;text-align:right;font-weight:300">10W–6L–2T</div>
+      </div>
+    </div>
+    <div class="h2h-row" onclick="openDrill('h2h-alex')">
+      <div class="h2h-avatar" style="background:#2a1a3a;color:#c084fc;border-color:#c084fc">AS</div>
+      <div class="h2h-name">Alex</div>
+      <div>
+        <div class="h2h-bar"><div class="h2h-bar-fill" style="width:50%;background:var(--accent)"></div></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;text-align:right;font-weight:300">8W–8L–2T</div>
+      </div>
+    </div>
+    <div class="h2h-row" onclick="openDrill('h2h-marcus')">
+      <div class="h2h-avatar" style="background:#1a3a1a;color:#4ade80;border-color:#4ade80">MK</div>
+      <div class="h2h-name">Marcus</div>
+      <div>
+        <div class="h2h-bar"><div class="h2h-bar-fill" style="width:38%;background:var(--red)"></div></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;text-align:right;font-weight:300">6W–10L–2T</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Win rate over time -->
+<div class="section" style="padding-top:16px">
+  <div class="section-title">Win rate trend</div>
+  <div class="chart-card">
+    <div class="chart-card-title">
+      Rolling accuracy by week
+      <span>67.5% season</span>
+    </div>
+    <canvas id="trendChart"></canvas>
+  </div>
+</div>
+
+<!-- Drill drawer -->
+<div class="drill-overlay" id="drill-overlay" onclick="closeDrill(event)">
+  <div class="drill-drawer" id="drill-drawer">
+    <div class="drill-handle"></div>
+    <div class="drill-title" id="drill-title">Drill Down</div>
+    <div class="drill-subtitle" id="drill-subtitle"></div>
+    <div class="drill-picks" id="drill-picks"></div>
+  </div>
+</div>
+
+<script>
+// ── Streak dots ───────────────────────────────────────────────
+const recentPicks = [
+  'c','c','w','c','c','w','w','c','c','c',
+  'w','c','c','c','w','c','w','c','c','c' // last 4 = current streak
+];
+
+const streakBar = document.getElementById('streak-bar');
+recentPicks.forEach((r, i) => {
+  const dot = document.createElement('div');
+  const isCurrent = i >= 16;
+  dot.className = `streak-dot ${isCurrent
+    ? (r === 'c' ? 'current-correct' : 'current-wrong')
+    : (r === 'c' ? 'correct' : 'wrong')}`;
+  streakBar.appendChild(dot);
+});
+
+// ── Chart defaults ────────────────────────────────────────────
+Chart.defaults.color = '#4a5568';
+Chart.defaults.borderColor = '#1e2733';
+Chart.defaults.font.family = "'Oswald', sans-serif";
+
+// ── Weekly points chart ───────────────────────────────────────
+const weekLabels = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','WC','DIV'];
+const weekPts    = [12,15,9,18,14,11,16,13,7,19,14,12,15,10,17,14,14,8,8,14];
+const leagueAvg  = [11,13,11,15,12,13,14,12,10,16,13,11,13,11,15,12,13,10,10,12];
+
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'bar',
+  data: {
+    labels: weekLabels,
+    datasets: [
+      {
+        label: 'You',
+        data: weekPts,
+        backgroundColor: weekPts.map(p => p >= 15 ? 'rgba(34,197,94,0.6)'
+          : p <= 9 ? 'rgba(239,68,68,0.4)' : 'rgba(106,163,255,0.4)'),
+        borderRadius: 3,
+        borderSkipped: false,
+      },
+      {
+        label: 'League avg',
+        data: leagueAvg,
+        type: 'line',
+        borderColor: 'rgba(245,166,35,0.4)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.4,
+        fill: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a2233',
+        borderColor: '#2a3a4a',
+        borderWidth: 1,
+        titleFont: { family: "'Oswald', sans-serif", size: 11 },
+        bodyFont:  { family: "'JetBrains Mono', monospace", size: 10 },
+        callbacks: {
+          label: ctx => ctx.datasetIndex === 0
+            ? `You: ${ctx.raw}pts`
+            : `Avg: ${ctx.raw}pts`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+      y: { grid: { color: 'rgba(30,39,51,0.5)' }, ticks: { font: { size: 9 } } }
+    }
+  }
+});
+
+// ── Upset chart ───────────────────────────────────────────────
+new Chart(document.getElementById('upsetChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Wk1','Wk3','Wk5','Wk7','Wk9','Wk11','Wk13','Wk15','Wk17','WC','DIV'],
+    datasets: [
+      {
+        label: 'Attempted',
+        data: [1,0,1,1,0,1,1,1,1,2,1],
+        backgroundColor: 'rgba(100,120,150,0.3)',
+        borderRadius: 3,
+      },
+      {
+        label: 'Hit',
+        data: [1,0,0,1,0,1,0,1,1,1,0],
+        backgroundColor: 'rgba(106,163,255,0.55)',
+        borderRadius: 3,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { font: { size: 9, family: "'Oswald', sans-serif" }, boxWidth: 10, color: '#4a5568' }
+      },
+      tooltip: {
+        backgroundColor: '#1a2233', borderColor: '#2a3a4a', borderWidth: 1,
+        titleFont: { family: "'Oswald', sans-serif", size: 11 },
+        bodyFont:  { family: "'JetBrains Mono', monospace", size: 10 },
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+      y: { grid: { color: 'rgba(30,39,51,0.5)' }, max: 3, ticks: { font: { size: 9 }, stepSize: 1 } }
+    }
+  }
+});
+
+// ── Win rate trend ────────────────────────────────────────────
+const trendData  = [73,68,55,72,69,64,70,66,58,75,71,68,73,65,74,69,67,60,64,70];
+
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: weekLabels,
+    datasets: [
+      {
+        label: 'Win rate %',
+        data: trendData,
+        borderColor: 'rgba(106,163,255,0.7)',
+        backgroundColor: 'rgba(106,163,255,0.06)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: trendData.map(d => d >= 70 ? '#22c55e' : d <= 58 ? '#ef4444' : '#6aa3ff'),
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: 'League avg %',
+        data: [66,64,62,68,65,63,66,64,61,67,64,62,65,61,66,64,63,60,62,65],
+        borderColor: 'rgba(245,166,35,0.35)',
+        borderWidth: 1.5,
+        borderDash: [4,4],
+        pointRadius: 0,
+        tension: 0.4,
+        fill: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { font: { size: 9, family: "'Oswald', sans-serif" }, boxWidth: 10, color: '#4a5568' }
+      },
+      tooltip: {
+        backgroundColor: '#1a2233', borderColor: '#2a3a4a', borderWidth: 1,
+        titleFont: { family: "'Oswald', sans-serif", size: 11 },
+        bodyFont:  { family: "'JetBrains Mono', monospace", size: 10 },
+        callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}%` }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+      y: {
+        grid: { color: 'rgba(30,39,51,0.5)' },
+        min: 50, max: 85,
+        ticks: { font: { size: 9 }, callback: v => v + '%' }
+      }
+    }
+  }
+});
+
+// ── Team tab toggle ───────────────────────────────────────────
+function showTeamTab(tab) {
+  document.getElementById('team-rows-best').style.display  = tab === 'best'  ? 'flex' : 'none';
+  document.getElementById('team-rows-worst').style.display = tab === 'worst' ? 'flex' : 'none';
+  document.getElementById('tab-best').style.cssText  = tab === 'best'
+    ? 'flex:1;font-family:"Oswald",sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px;border-radius:4px;border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:#22c55e;cursor:pointer'
+    : 'flex:1;font-family:"Oswald",sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px;border-radius:4px;border:1px solid #1e2733;background:transparent;color:#4a5568;cursor:pointer';
+  document.getElementById('tab-worst').style.cssText = tab === 'worst'
+    ? 'flex:1;font-family:"Oswald",sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px;border-radius:4px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#ef4444;cursor:pointer'
+    : 'flex:1;font-family:"Oswald",sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px;border-radius:4px;border:1px solid #1e2733;background:transparent;color:#4a5568;cursor:pointer';
+}
+
+// ── Drill drawer ──────────────────────────────────────────────
+const DRILL_DATA = {
+  record: {
+    title: '112–54 · 67.5%',
+    subtitle: 'All scored picks this season',
+    picks: [
+      { game: 'PHI @ CHI', sub: 'Thu Wk7 · Final 28–14', pick: 'PHI', result: 'correct', pts: '+2pt' },
+      { game: 'KC @ BAL',  sub: 'Sun Wk7 · Final 17–21', pick: 'BAL', result: 'correct', pts: '+1pt' },
+      { game: 'SF @ SEA',  sub: 'Sun Wk7 · Final 17–24', pick: 'SF',  result: 'wrong',   pts: '0pt'  },
+      { game: 'LAC @ HOU', sub: 'WC · Final 12–32',      pick: 'LAC', result: 'wrong',   pts: '0pt'  },
+      { game: 'HOU @ KC',  sub: 'DIV · Final 14–23',     pick: 'KC',  result: 'correct', pts: '+3pt' },
+      { game: 'GB @ MIN',  sub: 'Sun Wk17 · Final 25–27',pick: 'GB',  result: 'wrong',   pts: '0pt'  },
+      { game: 'DET @ SF',  sub: 'Mon Wk17 · Final 40–34',pick: 'DET', result: 'correct', pts: '+1pt' },
+    ]
+  },
+  contrarian: {
+    title: '23 Sole Correct Picks',
+    subtitle: 'Only you in the league got these right',
+    picks: [
+      { game: 'LAC @ NE',  sub: 'Sat Wk17 · Final 40–7',  pick: 'LAC', result: 'correct', pts: '+2pt' },
+      { game: 'HOU @ KC',  sub: 'DIV · Final 14–23',       pick: 'KC',  result: 'correct', pts: '+6pt' },
+      { game: 'GB @ MIN',  sub: 'Sun Wk12 · Final 24–27',  pick: 'MIN', result: 'correct', pts: '+2pt' },
+      { game: 'BAL @ BUF', sub: 'DIV · Final 27–31',       pick: 'BUF', result: 'correct', pts: '+9pt' },
+    ]
+  },
+  'slot-tnf': {
+    title: 'Thursday Night · 3–7',
+    subtitle: '30% win rate — your worst time slot',
+    picks: [
+      { game: 'PHI @ CHI', sub: 'Thu Wk7 · Final 28–14',   pick: 'PHI', result: 'correct', pts: '+2pt' },
+      { game: 'DET @ GB',  sub: 'Thu Wk12 · Final 31–29',  pick: 'GB',  result: 'wrong',   pts: '0pt'  },
+      { game: 'KC @ LV',   sub: 'Thu Wk9 · Final 21–17',   pick: 'LV',  result: 'wrong',   pts: '0pt'  },
+      { game: 'LAC @ KC',  sub: 'Thu Wk3 · Final 17–27',   pick: 'LAC', result: 'wrong',   pts: '0pt'  },
+      { game: 'SF @ SEA',  sub: 'Thu Wk5 · Final 20–17',   pick: 'SF',  result: 'correct', pts: '+1pt' },
+    ]
+  },
+  'h2h-marcus': {
+    title: 'vs Marcus · 6W–10L–2T',
+    subtitle: 'Head to head this season',
+    picks: [
+      { game: 'PHI @ CHI', sub: 'Both picked PHI · Tie',   pick: 'PHI', result: 'correct', pts: '+1pt' },
+      { game: 'KC @ DEN',  sub: 'You: KC · Marcus: KC · Tie', pick: 'KC', result: 'correct', pts: '+1pt' },
+      { game: 'GB @ MIN',  sub: 'You: GB · Marcus: MIN',   pick: 'GB',  result: 'wrong',   pts: '0pt'  },
+      { game: 'LAC @ HOU', sub: 'You: LAC · Marcus: HOU · Marcus wins', pick: 'LAC', result: 'wrong', pts: '0pt' },
+    ]
+  },
+};
+
+function openDrill(key) {
+  const data = DRILL_DATA[key];
+  if (!data) {
+    openDrill('record'); // fallback
+    return;
+  }
+
+  document.getElementById('drill-title').textContent    = data.title;
+  document.getElementById('drill-subtitle').textContent = data.subtitle;
+
+  const picksEl = document.getElementById('drill-picks');
+  picksEl.innerHTML = data.picks.map(p => `
+    <div class="drill-pick-row ${p.result}">
+      <div class="drill-pick-game">
+        ${p.game}
+        <span class="sub">${p.sub}</span>
+      </div>
+      <div class="drill-pick-result ${p.result}">${p.pick}</div>
+      <div class="drill-pick-pts">${p.pts}</div>
+    </div>
+  `).join('');
+
+  const overlay = document.getElementById('drill-overlay');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function closeDrill(e) {
+  if (e.target === document.getElementById('drill-overlay')) {
+    const overlay = document.getElementById('drill-overlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 300);
+  }
+}
+</script>
+</body>
+</html>

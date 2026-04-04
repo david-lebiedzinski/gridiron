@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridiron Picks</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080a0f;
+  --surface: #0d1117;
+  --border: #1e2733;
+  --accent: #f5a623;
+  --me-color: #6aa3ff;
+  --text: #e8eaf0;
+  --muted: #4a5568;
+  --green: #22c55e;
+  --red: #ef4444;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Nav bar ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(8,10,15,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  gap: 12px;
+}
+
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.nav-btn {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.nav-btn:hover { color: var(--text); border-color: var(--border); }
+.nav-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(245,166,35,0.06); }
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: #1a2a4a;
+  border: 1.5px solid #2a4a8a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--me-color);
+  flex-shrink: 0;
+}
+
+/* ── Season stats bar ── */
+.stats-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.stats-bar::-webkit-scrollbar { display: none; }
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 1px;
+}
+
+.stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.stat-val.accent { color: var(--accent); }
+.stat-val.green  { color: var(--green); }
+.stat-val.me     { color: var(--me-color); }
+
+.stat-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Table outer ── */
+.table-outer {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* ── Picks table ── */
+.picks-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: 12px;
+}
+
+/* Sticky left columns */
+.picks-table .s0,
+.picks-table .s1,
+.picks-table .s2,
+.picks-table .s3 {
+  position: sticky;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.picks-table .s0 { left: 0;     min-width: 36px; max-width: 36px; }
+.picks-table .s1 { left: 36px;  min-width: 68px; max-width: 68px; }
+.picks-table .s2 { left: 104px; min-width: 86px; max-width: 86px; }
+.picks-table .s3 { left: 190px; min-width: 66px; max-width: 66px;
+  box-shadow: 4px 0 12px rgba(0,0,0,0.7); }
+
+/* ── Header rows ── */
+.thead-names th,
+.thead-rank th,
+.thead-pts th {
+  padding: 0;
+  border-bottom: none;
+  background: var(--bg);
+}
+
+.thead-names th {
+  padding: 12px 3px 2px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-align: center;
+  white-space: nowrap;
+  color: #8a9ab0;
+}
+
+.thead-names th.me-col { color: var(--me-color); }
+.thead-names th.leader-col { color: var(--accent); }
+.thead-names th.empty-col { }
+
+.thead-rank th {
+  padding: 0 3px 2px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  text-align: center;
+  color: #2a3a4a;
+}
+
+.thead-rank th.me-col { color: #3a5a8a; }
+.thead-rank th.leader-col { color: #7a5a10; }
+
+.thead-pts th {
+  padding: 0 3px 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px;
+  text-align: center;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--border);
+}
+
+.thead-pts th.me-col { color: var(--text); }
+.thead-pts th.leader-col { color: var(--accent); }
+.thead-pts th.other-col { color: var(--muted); }
+
+.pts-sub {
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  color: #2a3a4a;
+  display: block;
+  font-weight: 400;
+}
+
+/* Column labels */
+.col-labels th {
+  padding: 6px 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #2a3a4a;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  white-space: nowrap;
+}
+
+.col-labels th.player-th { text-align: center; min-width: 58px; }
+.col-labels th.me-col { color: var(--me-color); }
+
+/* ── Week group rows ── */
+.week-group td {
+  padding: 7px 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #2a3a4a;
+  background: #090b10;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.week-group.current-week td {
+  color: rgba(245,166,35,0.5);
+  background: rgba(245,166,35,0.03);
+  border-color: rgba(245,166,35,0.12);
+}
+
+.week-group.playoff td   { color: #4a5568; background: #080c10; }
+.week-group.superbowl td { color: rgba(181,140,12,0.6); background: rgba(181,140,12,0.04); }
+
+/* ── Game rows ── */
+.game-row {
+  border-bottom: 1px solid rgba(30,39,51,0.4);
+  transition: background 0.08s;
+}
+
+.game-row:hover { background: rgba(255,255,255,0.012); }
+
+/* Past weeks — slightly faded */
+.game-row.past { opacity: 0.65; }
+.week-group.past td { opacity: 0.65; }
+
+/* Playoff left accent */
+.game-row.playoff td.s0 { border-left: 2px solid #2a3a4a; }
+.game-row.superbowl td.s0 { border-left: 2px solid rgba(181,140,12,0.4); }
+
+.game-row td { padding: 4px 3px; vertical-align: middle; }
+.game-row td.s0, .game-row td.s1,
+.game-row td.s2, .game-row td.s3 { padding: 4px 8px; }
+
+/* ── Fixed column cells ── */
+.wk-cell {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2a3a4a;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.wk-cell.playoff   { color: #4a5568; }
+.wk-cell.superbowl { color: rgba(181,140,12,0.7); }
+.wk-cell.current   { color: rgba(245,166,35,0.6); }
+
+.time-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #2a3a4a;
+  font-weight: 300;
+  white-space: nowrap;
+}
+
+.matchup-cell {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.matchup-cell .away { color: #c8d0da; }
+.matchup-cell .sep  { color: #2a3a4a; margin: 0 2px; font-size: 9px; }
+.matchup-cell .home { color: #5a6a7a; }
+
+.score-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #6a7a8a;
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 300;
+}
+
+.score-cell .status {
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: block;
+  text-align: right;
+}
+
+.status.final { color: #2a3a4a; }
+.status.live  { color: var(--accent); animation: blink 1.4s infinite; }
+.status.open  { color: var(--green); }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── Pick cell ── */
+.pick-cell {
+  text-align: center;
+  padding: 3px 2px !important;
+}
+
+/* ── THE CHIP ── */
+.chip {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 54px;
+  height: 28px;
+  border-radius: 3px;
+  padding: 0 6px;
+  position: relative;
+  transition: transform 0.1s, opacity 0.15s;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.chip-abbr {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.chip-icon {
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Correct */
+.chip.correct {
+  background: rgba(34,197,94,0.14);
+  border: 1px solid rgba(34,197,94,0.32);
+}
+.chip.correct .chip-abbr { color: #bbf7d0; }
+.chip.correct .chip-icon  { color: #4ade80; }
+
+/* Wrong */
+.chip.wrong {
+  background: rgba(239,68,68,0.07);
+  border: 1px solid rgba(239,68,68,0.18);
+  opacity: 0.45;
+}
+.chip.wrong .chip-abbr { color: #fca5a5; }
+.chip.wrong .chip-icon  { color: #f87171; }
+
+/* Pending (picked, pre-kickoff, visible) */
+.chip.pending {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #2a3a4a;
+}
+.chip.pending .chip-abbr { color: #8a9ab0; }
+.chip.pending .chip-icon  { color: #4a5568; }
+
+/* Live */
+.chip.live {
+  background: rgba(245,166,35,0.09);
+  border: 1px solid rgba(245,166,35,0.28);
+}
+.chip.live .chip-abbr { color: #fde68a; }
+.chip.live .chip-icon  { color: var(--accent); animation: blink 1.2s infinite; }
+
+/* Hidden (pre-kickoff, picks locked) */
+.chip.hidden {
+  background: #0d1117;
+  border: 1px dashed #1e2733;
+  justify-content: center;
+}
+.chip.hidden .chip-abbr { color: #2a3a4a; font-size: 14px; letter-spacing: 0; }
+.chip.hidden .chip-icon  { display: none; }
+
+/* Empty (no pick, read-only) */
+.chip.empty {
+  background: transparent;
+  border: 1px solid #111820;
+  justify-content: center;
+}
+.chip.empty .chip-abbr { color: #1a2530; font-size: 14px; letter-spacing: 0; }
+.chip.empty .chip-icon  { display: none; }
+
+/* ── MY editable chips ── */
+.chip.mine {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip.mine:hover { transform: scale(1.06); z-index: 20; }
+.chip.mine:active { transform: scale(0.96); }
+
+/* Editable empty — dashed border hint */
+.chip.mine.empty {
+  border: 1px dashed #2a3a4a;
+}
+.chip.mine.empty .chip-abbr { color: #2a3a4a; }
+
+/* Locked (after kickoff) — mine but can't edit */
+.chip.mine.locked {
+  cursor: default;
+}
+.chip.mine.locked:hover { transform: none; }
+
+/* Saving flash */
+.chip.saving {
+  opacity: 0.6;
+  animation: savePulse 0.4s ease;
+}
+
+@keyframes savePulse {
+  0%   { opacity: 1; }
+  40%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* Error shake */
+.chip.error {
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-4px); }
+  60%     { transform: translateX(4px); }
+}
+
+/* ── Bonus badge ── */
+.bonus-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ── Tooltip ── */
+.chip[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2233;
+  border: 1px solid #2a3a4a;
+  color: var(--text);
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 50;
+}
+.chip[data-tip]:hover::after { opacity: 1; }
+
+/* ── My column header tint ── */
+th.me-header-col {
+  position: relative;
+}
+
+/* ── Current week highlight ── */
+.current-week-anchor { scroll-margin-top: 120px; }
+
+/* ── Toast notification ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1a2233;
+  border: 1px solid #2a3a4a;
+  color: var(--text);
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 4px;
+  z-index: 500;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.toast.success { border-color: rgba(34,197,94,0.4); color: #4ade80; }
+.toast.error   { border-color: rgba(239,68,68,0.4); color: #f87171; }
+.toast.info    { border-color: rgba(245,166,35,0.3); color: var(--accent); }
+
+/* ── Pick hint tooltip (first load) ── */
+.pick-hint {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(245,166,35,0.12);
+  border: 1px solid rgba(245,166,35,0.3);
+  color: var(--accent);
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 30;
+  animation: hintBounce 2s ease 1s both;
+}
+
+@keyframes hintBounce {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  20%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  background: var(--bg);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lg {
+  width: 28px; height: 16px;
+  border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-family: 'Oswald', sans-serif;
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-logo">GRIDIRON</div>
+  <div class="nav-links">
+    <button class="nav-btn active">Picks</button>
+    <a href="#" class="nav-btn">Leaderboard</a>
+    <a href="#" class="nav-btn">Analytics</a>
+  </div>
+  <div class="nav-user">
+    <span style="font-family:'Oswald',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px">The Boys</span>
+    <div class="nav-avatar">JD</div>
+  </div>
+</nav>
+
+<!-- Season stats bar -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-val accent">2024</div>
+    <div class="stat-label">Season</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val me">187</div>
+    <div class="stat-label">Your pts</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val">#2</div>
+    <div class="stat-label">Rank</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val green">🔥 4</div>
+    <div class="stat-label">Streak</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val">Wk 7</div>
+    <div class="stat-label">Current</div>
+  </div>
+  <div class="stat-item" style="margin-left:auto;border-right:none">
+    <div class="stat-val" style="font-size:14px;color:var(--muted)">7/13</div>
+    <div class="stat-label">Picked this wk</div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="lg" style="background:rgba(34,197,94,0.14);border:1px solid rgba(34,197,94,0.32);color:#4ade80">✓</div>Correct
+  </div>
+  <div class="legend-item">
+    <div class="lg" style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.18);color:#f87171;opacity:0.5">✗</div>Wrong
+  </div>
+  <div class="legend-item">
+    <div class="lg" style="background:rgba(255,255,255,0.04);border:1px solid #2a3a4a;color:#4a5568">?</div>Pending
+  </div>
+  <div class="legend-item">
+    <div class="lg" style="background:#0d1117;border:1px dashed #1e2733;color:#2a3a4a;font-size:11px">🔒</div>Hidden
+  </div>
+  <div class="legend-item" style="margin-left:auto">
+    <div style="background:var(--accent);color:var(--bg);font-family:'Oswald',sans-serif;font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px">+2</div>
+    Sole bonus
+  </div>
+  <div class="legend-item" style="font-size:9px;color:rgba(245,166,35,0.5)">
+    TAP YOUR CELLS TO PICK
+  </div>
+</div>
+
+<!-- Table -->
+<div class="table-outer">
+<table class="picks-table" id="picks-table">
+  <thead>
+    <!-- Player names ordered by standings -->
+    <tr class="thead-names">
+      <th class="s0 empty-col" colspan="4" style="text-align:left;padding-left:10px;font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:2px;color:#1a2530"></th>
+      <th class="leader-col">Marcus</th>
+      <th class="me-col me-header-col" id="my-col-header">
+        You
+        <div class="pick-hint">Tap to pick</div>
+      </th>
+      <th class="other-col" style="color:#8a9ab0">Alex</th>
+      <th class="other-col" style="color:#8a9ab0">Taylor</th>
+      <th class="other-col" style="color:#8a9ab0">Morgan</th>
+      <th class="other-col" style="color:#8a9ab0">Jordan</th>
+    </tr>
+    <tr class="thead-rank">
+      <th class="s0" colspan="4"></th>
+      <th class="leader-col">#1</th>
+      <th class="me-col">#2</th>
+      <th>#3</th><th>#4</th><th>#5</th><th>#6</th>
+    </tr>
+    <tr class="thead-pts">
+      <th class="s0" colspan="4" style="text-align:left;padding-left:10px;font-family:'Oswald',sans-serif;font-size:8px;letter-spacing:2px;color:#1e2a3a;font-weight:400;border-bottom:2px solid var(--border)">SEASON PTS</th>
+      <th class="leader-col">201<span class="pts-sub">pts</span></th>
+      <th class="me-col">187<span class="pts-sub">pts</span></th>
+      <th class="other-col">178<span class="pts-sub">pts</span></th>
+      <th class="other-col">164<span class="pts-sub">pts</span></th>
+      <th class="other-col">159<span class="pts-sub">pts</span></th>
+      <th class="other-col">142<span class="pts-sub">pts</span></th>
+    </tr>
+    <tr class="col-labels">
+      <th class="s0">Wk</th>
+      <th class="s1">Time</th>
+      <th class="s2">Matchup</th>
+      <th class="s3">Score</th>
+      <th class="player-th">Marcus</th>
+      <th class="player-th me-col">You</th>
+      <th class="player-th">Alex</th>
+      <th class="player-th">Taylor</th>
+      <th class="player-th">Morgan</th>
+      <th class="player-th">Jordan</th>
+    </tr>
+  </thead>
+  <tbody id="table-body">
+    <!-- Rows injected by JS -->
+  </tbody>
+</table>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────
+// MY_COL index in players array (0-based, after fixed cols)
+const MY_COL = 1; // "You" = second player column (index 1)
+
+const PLAYERS = ['Marcus', 'You', 'Alex', 'Taylor', 'Morgan', 'Jordan'];
+
+const WEEKS = [
+  {
+    id: 'w17', label: 'Week 17 · Regular Season', type: 'regular',
+    current: false, past: true,
+    games: [
+      { id: 'g1',  time: 'Sat 1:00', away: 'LAC', home: 'NE',  score: '40–7',  status: 'final',
+        picks: ['LAC','LAC','LAC','LAC','LAC','NE'],
+        correct: 'LAC', bonus: [null,'+2',null,null,null,null] },
+      { id: 'g2',  time: 'Sat 4:30', away: 'DEN', home: 'CIN', score: '24–30', status: 'final',
+        picks: ['CIN','DEN','CIN','CIN','CIN','DEN'],
+        correct: 'CIN', bonus: [null,null,null,null,null,null] },
+      { id: 'g3',  time: 'Sat 8:00', away: 'ARI', home: 'LAR', score: '9–13',  status: 'final',
+        picks: ['LAR','LAR','LAR','LAR','LAR','LAR'],
+        correct: 'LAR', bonus: [null,null,null,null,null,null] },
+      { id: 'g4',  time: 'Sun 1:00', away: 'NYJ', home: 'BUF', score: '14–40', status: 'final',
+        picks: ['BUF','BUF','BUF','BUF','BUF','BUF'],
+        correct: 'BUF', bonus: [null,null,null,null,null,null] },
+      { id: 'g5',  time: 'Sun 1:00', away: 'DAL', home: 'PHI', score: '7–41',  status: 'final',
+        picks: ['PHI','PHI','PHI','PHI','PHI','PHI'],
+        correct: 'PHI', bonus: [null,null,null,null,null,null] },
+      { id: 'g6',  time: 'Sun 4:25', away: 'GB',  home: 'MIN', score: '25–27', status: 'final',
+        picks: ['GB','GB','MIN','GB','GB','GB'],
+        correct: 'MIN', bonus: [null,null,'+2',null,null,null] },
+      { id: 'g7',  time: 'Mon 8:15', away: 'DET', home: 'SF',  score: '40–34', status: 'final',
+        picks: ['DET','DET','DET','DET','DET','SF'],
+        correct: 'DET', bonus: [null,null,null,null,null,null] },
+    ]
+  },
+  {
+    id: 'w18', label: 'Week 18 · Regular Season Final', type: 'regular',
+    current: false, past: true,
+    games: [
+      { id: 'g8',  time: 'Sat 4:30', away: 'CLE', home: 'BAL', score: '10–35', status: 'final',
+        picks: ['BAL','BAL','BAL','BAL','BAL','BAL'],
+        correct: 'BAL', bonus: [null,null,null,null,null,null] },
+      { id: 'g9',  time: 'Sun 4:25', away: 'KC',  home: 'DEN', score: '38–0',  status: 'final',
+        picks: ['KC','KC','KC','KC','KC','DEN'],
+        correct: 'KC', bonus: [null,null,null,null,null,null] },
+    ]
+  },
+  {
+    id: 'wc', label: 'Wild Card · Playoffs', type: 'playoff',
+    current: false, past: true,
+    games: [
+      { id: 'g10', time: 'Sat 4:30', away: 'LAC', home: 'HOU', score: '12–32', status: 'final',
+        picks: ['LAC','LAC','LAC','LAC','HOU','LAC'],
+        correct: 'HOU', bonus: [null,null,null,null,'+4',null] },
+      { id: 'g11', time: 'Sat 8:00', away: 'PIT', home: 'BAL', score: '14–28', status: 'final',
+        picks: ['BAL','BAL','BAL','BAL','BAL','BAL'],
+        correct: 'BAL', bonus: [null,null,null,null,null,null] },
+      { id: 'g12', time: 'Sun 1:00', away: 'MIN', home: 'LAR', score: '9–27',  status: 'final',
+        picks: ['MIN','MIN','MIN','LAR','MIN','LAR'],
+        correct: 'LAR', bonus: [null,null,null,'+4',null,null] },
+    ]
+  },
+  {
+    id: 'div', label: 'Divisional Round · Playoffs', type: 'playoff',
+    current: false, past: true,
+    games: [
+      { id: 'g13', time: 'Sat 4:30', away: 'HOU', home: 'KC',  score: '14–23', status: 'final',
+        picks: ['KC','KC','KC','KC','KC','KC'],
+        correct: 'KC', bonus: [null,null,null,null,null,null] },
+      { id: 'g14', time: 'Sun 6:30', away: 'BAL', home: 'BUF', score: '27–31', status: 'final',
+        picks: ['BUF','BAL','BUF','BAL','BUF','BAL'],
+        correct: 'BUF', bonus: [null,null,null,null,null,null] },
+    ]
+  },
+  {
+    id: 'w7', label: 'Week 7 · Current', type: 'regular',
+    current: true, past: false,
+    games: [
+      // Locked final
+      { id: 'g15', time: 'Thu 8:15', away: 'PHI', home: 'CHI', score: '28–14', status: 'final',
+        locked: true,
+        picks: ['PHI','PHI','CHI','PHI','PHI','PHI'],
+        correct: 'PHI', bonus: ['+2',null,null,null,null,null] },
+      // Live game
+      { id: 'g16', time: 'Sun 1:00', away: 'KC',  home: 'BAL', score: '17–21', status: 'live',
+        locked: true,
+        picks: ['BAL','KC','BAL','BAL','KC','BAL'],
+        correct: null, bonus: [null,null,null,null,null,null] },
+      // Open — my pick visible, others hidden
+      { id: 'g17', time: 'Sun 1:00', away: 'BUF', home: 'NYJ', score: '—', status: 'open',
+        locked: false,
+        picks: [null,'BUF',null,null,null,null],
+        othersHidden: true,
+        correct: null, bonus: [null,null,null,null,null,null] },
+      // Open — no picks yet
+      { id: 'g18', time: 'Sun 4:25', away: 'SF',  home: 'SEA', score: '—', status: 'open',
+        locked: false,
+        picks: [null,null,null,null,null,null],
+        othersHidden: true,
+        correct: null, bonus: [null,null,null,null,null,null] },
+      // Open — some picks in
+      { id: 'g19', time: 'Sun 4:25', away: 'CIN', home: 'PIT', score: '—', status: 'open',
+        locked: false,
+        picks: [null,null,null,null,null,null],
+        othersHidden: true,
+        correct: null, bonus: [null,null,null,null,null,null] },
+      // SNF — open
+      { id: 'g20', time: 'Sun 8:20', away: 'DET', home: 'GB',  score: '—', status: 'open',
+        locked: false,
+        picks: [null,null,null,null,null,null],
+        othersHidden: true,
+        correct: null, bonus: [null,null,null,null,null,null] },
+    ]
+  },
+];
+
+// ── State ────────────────────────────────────────────────────
+// myPicks: gameId → null | away abbr | home abbr
+const myPicks = {};
+WEEKS.forEach(w => w.games.forEach(g => {
+  myPicks[g.id] = g.picks[MY_COL];
+}));
+
+// ── Render ───────────────────────────────────────────────────
+function chipHTML(pick, correct, status, bonus, isMine, isLocked, isHidden, gameId, away, home) {
+  let cls, abbr, icon, tipText = '';
+
+  if (status === 'final' && correct) {
+    const isCorrect = pick === correct;
+    cls  = isCorrect ? 'correct' : 'wrong';
+    abbr = pick || '—';
+    icon = isCorrect ? '✓' : '✗';
+    tipText = isCorrect
+      ? `${abbr} · ${bonus ? bonus : '+1pt'}`
+      : `${abbr} · 0pt`;
+  } else if (status === 'live') {
+    if (isHidden)     { cls = 'hidden'; abbr = '🔒'; icon = ''; }
+    else if (!pick)   { cls = isMine ? 'empty' : 'empty'; abbr = '—'; icon = ''; }
+    else              { cls = 'live';  abbr = pick; icon = '●'; tipText = `${pick} · live`; }
+  } else {
+    // open
+    if (isHidden)   { cls = 'hidden';  abbr = '🔒'; icon = ''; }
+    else if (!pick) { cls = 'empty';   abbr = '—';  icon = ''; }
+    else            { cls = 'pending'; abbr = pick; icon = '?'; tipText = `${abbr} · pending`; }
+  }
+
+  if (isMine) cls += ' mine';
+  if (isMine && isLocked) cls += ' locked';
+
+  const bongeHTML = bonus
+    ? `<div class="bonus-badge">${bonus}</div>` : '';
+
+  const tipAttr = tipText
+    ? `data-tip="${tipText}"` : '';
+
+  const editAttr = (isMine && !isLocked)
+    ? `data-game="${gameId}" data-away="${away}" data-home="${home}"` : '';
+
+  return `<div class="chip ${cls}" ${tipAttr} ${editAttr}>${bongeHTML}<span class="chip-abbr">${abbr}</span>${icon ? `<span class="chip-icon">${icon}</span>` : ''}</div>`;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('table-body');
+  let html = '';
+
+  WEEKS.forEach(week => {
+    const wkClass = [
+      'week-group',
+      week.type === 'playoff' && week.id !== 'sb' ? 'playoff' : '',
+      week.type === 'superbowl' ? 'superbowl' : '',
+      week.current ? 'current-week' : '',
+      week.past ? 'past' : '',
+    ].filter(Boolean).join(' ');
+
+    const anchorId = week.current ? 'id="current-week-anchor" class="current-week-anchor"' : '';
+
+    html += `<tr class="${wkClass}" ${anchorId}>
+      <td colspan="20">${week.label}</td>
+    </tr>`;
+
+    week.games.forEach(game => {
+      const rowClass = [
+        'game-row',
+        week.past ? 'past' : '',
+        week.type === 'playoff' ? 'playoff' : '',
+        week.type === 'superbowl' ? 'superbowl' : '',
+      ].filter(Boolean).join(' ');
+
+      const wkLabel = week.id === 'wc' ? 'WC'
+        : week.id === 'div' ? 'DIV'
+        : week.id === 'conf' ? 'CONF'
+        : week.id === 'sb' ? 'SB'
+        : week.id.replace('w','');
+
+      const wkCellClass = week.type === 'playoff' ? 'wk-cell playoff'
+        : week.current ? 'wk-cell current' : 'wk-cell';
+
+      const statusClass = game.status;
+
+      let statusLabel = game.status === 'final' ? 'Final'
+        : game.status === 'live' ? '● Live'
+        : 'Open';
+
+      html += `<tr class="${rowClass}" data-game-id="${game.id}">
+        <td class="s0 ${wkCellClass}">${wkLabel}</td>
+        <td class="s1 time-cell">${game.time}</td>
+        <td class="s2 matchup-cell"><span class="away">${game.away}</span><span class="sep">@</span><span class="home">${game.home}</span></td>
+        <td class="s3 score-cell">${game.score}<span class="status ${statusClass}">${statusLabel}</span></td>`;
+
+      PLAYERS.forEach((player, pi) => {
+        const isMine    = pi === MY_COL;
+        const isLocked  = !!game.locked;
+        const pick      = isMine ? myPicks[game.id] : game.picks[pi];
+        const isHidden  = !isMine && game.othersHidden && !pick;
+        const bonus     = isMine ? game.bonus[MY_COL] : game.bonus[pi];
+
+        html += `<td class="pick-cell${isMine ? ' my-pick-cell' : ''}">
+          ${chipHTML(pick, game.correct, game.status, bonus, isMine, isLocked, isHidden, game.id, game.away, game.home)}
+        </td>`;
+      });
+
+      html += `</tr>`;
+    });
+  });
+
+  tbody.innerHTML = html;
+  attachListeners();
+}
+
+// ── Tap to cycle picks ────────────────────────────────────────
+function attachListeners() {
+  document.querySelectorAll('.chip.mine:not(.locked)').forEach(chip => {
+    chip.addEventListener('click', handlePickTap);
+  });
+}
+
+function handlePickTap(e) {
+  const chip   = e.currentTarget;
+  const gameId = chip.dataset.game;
+  const away   = chip.dataset.away;
+  const home   = chip.dataset.home;
+  if (!gameId) return;
+
+  const current = myPicks[gameId];
+  let next;
+
+  if (!current)       next = away;
+  else if (current === away) next = home;
+  else                next = null;
+
+  // Optimistic update
+  myPicks[gameId] = next;
+  renderTable();
+  scrollToCurrentWeek(false);
+
+  // Simulate save
+  simulateSave(gameId, next);
+}
+
+function simulateSave(gameId, pick) {
+  // Find chip after re-render
+  const chip = document.querySelector(`.chip.mine[data-game="${gameId}"]`);
+  if (!chip) return;
+
+  chip.classList.add('saving');
+
+  setTimeout(() => {
+    chip.classList.remove('saving');
+    const msg = pick
+      ? `${pick} picked`
+      : 'Pick cleared';
+    showToast(msg, pick ? 'success' : 'info');
+  }, 300);
+}
+
+// ── Toast ────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 1800);
+}
+
+// ── Auto-scroll to current week ───────────────────────────────
+function scrollToCurrentWeek(smooth = true) {
+  const anchor = document.getElementById('current-week-anchor');
+  if (anchor) {
+    anchor.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'start' });
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+renderTable();
+setTimeout(() => scrollToCurrentWeek(true), 200);
+
+// Week filter buttons (cosmetic)
+document.querySelectorAll('.wf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.wf-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

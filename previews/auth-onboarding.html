@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridiron — Auth</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #080a0f;
+  --card:   #0d1117;
+  --card2:  #111820;
+  --border: #1e2733;
+  --accent: #f5a623;
+  --me:     #6aa3ff;
+  --text:   #e8eaf0;
+  --muted:  #4a5568;
+  --green:  #22c55e;
+  --red:    #ef4444;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Screen switcher (prototype only) ── */
+.screen-switcher {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: #060810;
+  border-bottom: 1px solid #1e2733;
+  display: flex; gap: 4px; padding: 8px 12px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.screen-switcher::-webkit-scrollbar { display: none; }
+
+.sw-btn {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 3px;
+  border: 1px solid #1e2733; background: transparent;
+  color: #4a5568; cursor: pointer; white-space: nowrap;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.sw-btn:hover { color: #e8eaf0; border-color: #4a5568; }
+.sw-btn.active { color: #f5a623; border-color: #f5a623; background: rgba(245,166,35,0.06); }
+
+/* ── Screens ── */
+.screen { display: none; min-height: 100vh; padding-top: 44px; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ════════════════════════════════════
+   SHARED BRANDED BACKGROUND
+   ════════════════════════════════════ */
+.auth-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(245,166,35,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%,  rgba(0,76,84,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%,  rgba(36,23,115,0.08) 0%, transparent 50%),
+    #080a0f;
+}
+
+/* Stadium light rays */
+.auth-bg::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 300px;
+  background: repeating-linear-gradient(
+    -15deg,
+    transparent,
+    transparent 40px,
+    rgba(245,166,35,0.015) 40px,
+    rgba(245,166,35,0.015) 41px
+  );
+  pointer-events: none;
+}
+
+/* Field lines at bottom */
+.auth-bg::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 80px,
+    rgba(255,255,255,0.015) 80px,
+    rgba(255,255,255,0.015) 81px
+  );
+  pointer-events: none;
+}
+
+/* ── Logo block ── */
+.auth-logo {
+  text-align: center; padding: 40px 20px 32px;
+  position: relative; z-index: 1;
+}
+
+.logo-mark {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; letter-spacing: 8px; color: var(--accent);
+  line-height: 1; display: block;
+  text-shadow: 0 0 40px rgba(245,166,35,0.3);
+}
+
+.logo-sub {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--muted); margin-top: 4px;
+}
+
+/* Ball icon */
+.logo-icon {
+  font-size: 32px; display: block;
+  margin: 0 auto 12px; line-height: 1;
+  filter: drop-shadow(0 0 12px rgba(245,166,35,0.4));
+}
+
+/* ── Auth card ── */
+.auth-card {
+  background: rgba(13,17,23,0.95);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 24px;
+  width: 100%; max-width: 400px;
+  margin: 0 auto;
+  position: relative; z-index: 1;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+}
+
+.auth-card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: 2px; margin-bottom: 4px;
+}
+
+.auth-card-sub {
+  font-size: 13px; color: var(--muted); margin-bottom: 24px;
+}
+
+/* ── Form fields ── */
+.field { margin-bottom: 16px; }
+
+.field-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px; display: block;
+}
+
+.field-input {
+  width: 100%; padding: 12px 14px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  outline: none; transition: border-color 0.15s;
+}
+
+.field-input:focus { border-color: var(--accent); }
+.field-input::placeholder { color: var(--muted); }
+.field-input.error { border-color: var(--red); }
+
+.field-error {
+  font-size: 11px; color: var(--red);
+  margin-top: 5px; display: none;
+}
+.field-error.visible { display: block; }
+
+.field-hint {
+  font-size: 11px; color: var(--muted);
+  margin-top: 5px;
+}
+
+/* ── Submit button ── */
+.auth-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #0a0600;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 3px;
+  border: none; border-radius: 6px;
+  cursor: pointer; transition: all 0.15s;
+  margin-top: 8px;
+}
+
+.auth-btn:hover { background: #e09010; }
+.auth-btn:active { transform: scale(0.99); }
+.auth-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* ── Auth footer link ── */
+.auth-footer {
+  text-align: center; margin-top: 20px;
+  font-size: 13px; color: var(--muted);
+}
+
+.auth-link {
+  color: var(--accent); cursor: pointer;
+  text-decoration: none; transition: color 0.15s;
+}
+.auth-link:hover { color: #ffc040; }
+
+/* ── Divider ── */
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.auth-divider-text {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+}
+
+/* ════════════════════════════════════
+   ONBOARDING
+   ════════════════════════════════════ */
+.onboard-wrap {
+  max-width: 480px; margin: 0 auto;
+  padding: 0 20px 60px;
+  position: relative; z-index: 1;
+}
+
+/* Step cards */
+.step-card {
+  background: rgba(13,17,23,0.95);
+  border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 12px;
+  overflow: hidden; backdrop-filter: blur(20px);
+  transition: border-color 0.2s;
+}
+
+.step-card.active { border-color: rgba(245,166,35,0.3); }
+.step-card.done   { border-color: rgba(34,197,94,0.25); }
+
+.step-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px;
+}
+
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 14px;
+  flex-shrink: 0; border: 1.5px solid var(--border);
+  color: var(--muted); background: var(--card2);
+  transition: all 0.2s;
+}
+
+.step-card.active .step-num { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
+.step-card.done   .step-num { border-color: var(--green);  color: var(--green);  background: rgba(34,197,94,0.08); }
+
+.step-title {
+  font-family: 'Oswald', sans-serif; font-size: 14px;
+  font-weight: 600; flex: 1;
+}
+
+.step-check {
+  font-size: 14px; color: var(--green); display: none;
+}
+.step-card.done .step-check { display: block; }
+
+.step-body {
+  padding: 0 20px 20px;
+  display: none;
+}
+.step-card.active .step-body,
+.step-card.done   .step-body { display: block; }
+
+/* Avatar upload area */
+.avatar-upload {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 16px;
+}
+
+.avatar-preview {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--card2); border: 2px dashed var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; flex-shrink: 0; position: relative;
+  overflow: hidden; cursor: pointer; transition: border-color 0.15s;
+}
+
+.avatar-preview:hover { border-color: var(--accent); }
+.avatar-preview.has-image { border-style: solid; border-color: var(--accent); }
+
+.avatar-upload-btn {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 8px 16px; border-radius: 4px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.avatar-upload-btn:hover { color: var(--text); border-color: #4a5568; }
+
+.avatar-skip {
+  font-size: 12px; color: var(--muted); margin-top: 4px; cursor: pointer;
+}
+.avatar-skip:hover { color: var(--text); }
+
+/* Team picker */
+.team-picker {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 6px; margin-bottom: 4px;
+}
+
+@media (min-width: 400px) {
+  .team-picker { grid-template-columns: repeat(6, 1fr); }
+}
+
+.team-option {
+  aspect-ratio: 1; border-radius: 6px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--card2); transition: all 0.15s;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px; letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.7); padding: 4px 2px;
+}
+
+.team-option:hover { border-color: #4a5568; color: var(--text); }
+
+.team-option.selected {
+  border-width: 2px;
+  color: #fff;
+}
+
+.team-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Invite code input — large */
+.invite-input {
+  width: 100%;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; letter-spacing: 6px;
+  text-align: center; padding: 16px;
+  outline: none; transition: border-color 0.15s;
+  text-transform: uppercase;
+}
+
+.invite-input:focus { border-color: var(--accent); }
+.invite-input.valid { border-color: var(--green); }
+.invite-input.invalid { border-color: var(--red); }
+.invite-input::placeholder { color: #2a3a4a; font-size: 24px; letter-spacing: 4px; }
+
+.invite-result {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 6px; margin-top: 8px;
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  display: none;
+}
+
+.invite-result.success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: var(--green); }
+.invite-result.error   { background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.2);  color: var(--red); }
+
+/* Skip invite */
+.skip-invite {
+  text-align: center; margin-top: 12px;
+  font-size: 12px; color: var(--muted);
+}
+
+/* Done button */
+.onboard-submit {
+  width: 100%; padding: 16px;
+  background: var(--accent); color: #0a0600;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 3px;
+  border: none; border-radius: 8px;
+  cursor: pointer; transition: all 0.15s;
+  margin-top: 4px;
+}
+
+.onboard-submit:hover { background: #e09010; }
+
+/* ════════════════════════════════════
+   WAITING SCREEN
+   ════════════════════════════════════ */
+.waiting-card {
+  background: rgba(13,17,23,0.95);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 36px 28px;
+  max-width: 400px; width: 100%;
+  margin: 0 auto; text-align: center;
+  position: relative; z-index: 1;
+  backdrop-filter: blur(20px);
+}
+
+.waiting-icon {
+  font-size: 48px; display: block;
+  margin-bottom: 20px; line-height: 1;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.waiting-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.waiting-body {
+  font-size: 14px; color: var(--muted);
+  line-height: 1.6; margin-bottom: 28px;
+}
+
+.waiting-body strong { color: var(--text); }
+
+/* Pulsing dots */
+.waiting-dots {
+  display: flex; gap: 8px; justify-content: center;
+  margin-bottom: 28px;
+}
+
+.waiting-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.waiting-dot:nth-child(2) { animation-delay: 0.2s; }
+.waiting-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%,80%,100% { background: var(--border); transform: scale(1); }
+  40%         { background: var(--accent); transform: scale(1.3); }
+}
+
+/* Have a code section */
+.have-code {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.have-code-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+/* User info strip on waiting screen */
+.waiting-user {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  margin-bottom: 20px;
+}
+
+.waiting-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #1a2a4a; border: 2px solid #004C54;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  font-weight: 700; color: var(--me);
+}
+
+.waiting-name { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 600; }
+.waiting-email { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+.signout-link { color: var(--muted); cursor: pointer; font-size: 11px; margin-left: auto; }
+.signout-link:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- Screen switcher (prototype nav) -->
+<div class="screen-switcher">
+  <button class="sw-btn active" onclick="show('login')">Login</button>
+  <button class="sw-btn" onclick="show('signup')">Sign Up</button>
+  <button class="sw-btn" onclick="show('onboarding')">Onboarding</button>
+  <button class="sw-btn" onclick="show('waiting')">Waiting</button>
+</div>
+
+<!-- ════════════════════════════════════
+     LOGIN
+     ════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="auth-bg"></div>
+
+  <div class="auth-logo">
+    <span class="logo-icon">🏈</span>
+    <span class="logo-mark">GRIDIRON</span>
+    <div class="logo-sub">NFL Pick'em League</div>
+  </div>
+
+  <div style="padding: 0 20px 40px; position: relative; z-index: 1;">
+    <div class="auth-card">
+      <div class="auth-card-title">Welcome back</div>
+      <div class="auth-card-sub">Sign in to your account</div>
+
+      <div class="field">
+        <label class="field-label">Email</label>
+        <input class="field-input" type="email" placeholder="you@example.com" id="login-email">
+      </div>
+
+      <div class="field">
+        <label class="field-label">Password</label>
+        <input class="field-input" type="password" placeholder="••••••••" id="login-password">
+        <div class="field-error" id="login-error">Invalid email or password. Try again.</div>
+      </div>
+
+      <button class="auth-btn" onclick="simulateLogin()">SIGN IN</button>
+
+      <div class="auth-divider">
+        <div class="auth-divider-text">or</div>
+      </div>
+
+      <div class="auth-footer" style="margin-top:0">
+        Don't have an account?
+        <span class="auth-link" onclick="show('signup')">Sign up</span>
+      </div>
+    </div>
+
+    <!-- Tagline -->
+    <div style="text-align:center;margin-top:32px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#2a3a4a">
+      Pick. Predict. Dominate.
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SIGN UP
+     ════════════════════════════════════ -->
+<div class="screen" id="screen-signup">
+  <div class="auth-bg"></div>
+
+  <div class="auth-logo">
+    <span class="logo-icon">🏈</span>
+    <span class="logo-mark">GRIDIRON</span>
+    <div class="logo-sub">NFL Pick'em League</div>
+  </div>
+
+  <div style="padding: 0 20px 40px; position: relative; z-index: 1;">
+    <div class="auth-card">
+      <div class="auth-card-title">Create account</div>
+      <div class="auth-card-sub">Join the league. Start picking.</div>
+
+      <div class="field">
+        <label class="field-label">Email</label>
+        <input class="field-input" type="email" placeholder="you@example.com">
+      </div>
+
+      <div class="field">
+        <label class="field-label">Password</label>
+        <input class="field-input" type="password" placeholder="At least 8 characters">
+        <div class="field-hint">Min 8 characters</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Confirm password</label>
+        <input class="field-input" type="password" placeholder="••••••••">
+      </div>
+
+      <button class="auth-btn" onclick="show('onboarding')">CREATE ACCOUNT</button>
+
+      <div class="auth-footer">
+        Already have an account?
+        <span class="auth-link" onclick="show('login')">Sign in</span>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:32px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#2a3a4a">
+      Pick. Predict. Dominate.
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ONBOARDING
+     ════════════════════════════════════ -->
+<div class="screen" id="screen-onboarding">
+  <div class="auth-bg"></div>
+
+  <!-- Header -->
+  <div class="auth-logo" style="padding-bottom:16px">
+    <span class="logo-mark" style="font-size:36px;letter-spacing:6px">GRIDIRON</span>
+    <div class="logo-sub">Let's get you set up</div>
+  </div>
+
+  <div class="onboard-wrap">
+
+    <!-- Step 1 — Username -->
+    <div class="step-card active" id="step-1">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div class="step-title">Choose your name</div>
+        <div class="step-check">✓</div>
+      </div>
+      <div class="step-body">
+        <div class="field">
+          <label class="field-label">Username</label>
+          <input class="field-input" type="text" placeholder="e.g. jordan_picks"
+            id="username-input" oninput="checkUsername(this)">
+          <div class="field-error" id="username-error">Username already taken. Try another.</div>
+          <div class="field-hint">Shown to everyone in your league. No spaces.</div>
+        </div>
+        <button class="auth-btn" style="font-size:14px;padding:10px;letter-spacing:2px"
+          onclick="completeStep(1)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 — Photo -->
+    <div class="step-card" id="step-2">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div class="step-title">Add a photo</div>
+        <div class="step-check">✓</div>
+      </div>
+      <div class="step-body">
+        <div class="avatar-upload">
+          <div class="avatar-preview" id="avatar-preview" onclick="triggerUpload()">
+            👤
+          </div>
+          <div>
+            <button class="avatar-upload-btn" onclick="triggerUpload()">Upload photo</button>
+            <div class="avatar-skip" onclick="completeStep(2)">Skip for now →</div>
+          </div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);font-weight:300">
+          JPG or PNG · Max 5MB · Shows in pick bar + leaderboard
+        </div>
+        <input type="file" id="file-input" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+        <button class="auth-btn" style="font-size:14px;padding:10px;letter-spacing:2px;margin-top:16px"
+          onclick="completeStep(2)" id="photo-continue" disabled>Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 — Favorite team -->
+    <div class="step-card" id="step-3">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div class="step-title">Pick your team</div>
+        <div class="step-check">✓</div>
+      </div>
+      <div class="step-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          Your team's colors ring your avatar across the app.
+        </div>
+        <div class="team-picker" id="team-picker"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">
+          Selected: <span id="selected-team-label" style="color:var(--accent)">None</span>
+        </div>
+        <button class="auth-btn" style="font-size:14px;padding:10px;letter-spacing:2px;margin-top:16px"
+          onclick="completeStep(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 4 — Invite code -->
+    <div class="step-card" id="step-4">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <div class="step-title">Enter your invite code</div>
+        <div class="step-check">✓</div>
+      </div>
+      <div class="step-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">
+          Your commissioner will share a code to join their league.
+        </div>
+        <input class="invite-input" type="text" placeholder="XXXX-XXXX"
+          id="invite-input" maxlength="9" oninput="formatCode(this)">
+        <div class="invite-result" id="invite-result"></div>
+        <div class="skip-invite">
+          Don't have a code? <span class="auth-link" onclick="show('waiting')">Skip for now →</span>
+        </div>
+        <button class="auth-btn" style="font-size:14px;padding:10px;letter-spacing:2px;margin-top:16px"
+          onclick="validateCode()">JOIN LEAGUE →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     WAITING FOR CODE
+     ════════════════════════════════════ -->
+<div class="screen" id="screen-waiting">
+  <div class="auth-bg"></div>
+
+  <div style="padding: 40px 20px 0; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; flex: 1;">
+
+    <div class="waiting-card">
+
+      <!-- Signed in as -->
+      <div class="waiting-user">
+        <div class="waiting-avatar">JD</div>
+        <div>
+          <div class="waiting-name">Jordan D.</div>
+          <div class="waiting-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4c26233e282d220c29212d2520622f2321">[email&#160;protected]</a></div>
+        </div>
+        <span class="signout-link" onclick="show('login')">Sign out</span>
+      </div>
+
+      <span class="waiting-icon">📬</span>
+
+      <div class="waiting-title">You're in the system</div>
+
+      <div class="waiting-body">
+        Your account is all set. Now you just need an <strong>invite code</strong> from your league commissioner to start picking.
+      </div>
+
+      <div class="waiting-dots">
+        <div class="waiting-dot"></div>
+        <div class="waiting-dot"></div>
+        <div class="waiting-dot"></div>
+      </div>
+
+      <!-- Have a code -->
+      <div class="have-code">
+        <div class="have-code-label">Got a code? Enter it now</div>
+        <input class="invite-input" type="text" placeholder="XXXX-XXXX"
+          id="waiting-invite" maxlength="9" oninput="formatCode(this)"
+          style="font-size:24px;letter-spacing:4px;padding:12px">
+        <button class="onboard-submit" style="margin-top:12px;font-size:16px;letter-spacing:2px"
+          onclick="validateWaitingCode()">JOIN LEAGUE →</button>
+      </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:24px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#2a3a4a">
+      Pick. Predict. Dominate.
+    </div>
+
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── Screen switcher ───────────────────────────────────────────
+function show(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  const btns = document.querySelectorAll('.sw-btn');
+  const names = ['login','signup','onboarding','waiting'];
+  const idx = names.indexOf(name);
+  if (idx >= 0) btns[idx].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── Login simulation ──────────────────────────────────────────
+function simulateLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass  = document.getElementById('login-password').value;
+  const err   = document.getElementById('login-error');
+
+  if (!email || !pass) {
+    err.classList.add('visible');
+    return;
+  }
+  err.classList.remove('visible');
+  // In real app: supabase.auth.signInWithPassword({ email, password })
+  alert('Login successful → redirect to /picks');
+}
+
+// ── Step completion ───────────────────────────────────────────
+function completeStep(num) {
+  const card = document.getElementById('step-' + num);
+  card.classList.remove('active');
+  card.classList.add('done');
+
+  const next = document.getElementById('step-' + (num + 1));
+  if (next) {
+    next.classList.add('active');
+    next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ── Username check ────────────────────────────────────────────
+const takenUsernames = ['jordan', 'marcus', 'admin', 'gridiron'];
+
+function checkUsername(input) {
+  const err = document.getElementById('username-error');
+  const val = input.value.toLowerCase().trim();
+  if (takenUsernames.includes(val)) {
+    input.classList.add('error');
+    err.classList.add('visible');
+  } else {
+    input.classList.remove('error');
+    err.classList.remove('visible');
+  }
+}
+
+// ── Photo upload ──────────────────────────────────────────────
+function triggerUpload() {
+  document.getElementById('file-input').click();
+}
+
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('avatar-preview');
+    preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    preview.classList.add('has-image');
+    document.getElementById('photo-continue').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Team picker ───────────────────────────────────────────────
+const TEAMS = [
+  { abbr:'ARI', color:'#97233F' }, { abbr:'ATL', color:'#A71930' },
+  { abbr:'BAL', color:'#241773' }, { abbr:'BUF', color:'#00338D' },
+  { abbr:'CAR', color:'#0085CA' }, { abbr:'CHI', color:'#0B1C3E' },
+  { abbr:'CIN', color:'#FB4F14' }, { abbr:'CLE', color:'#FF3C00' },
+  { abbr:'DAL', color:'#003594' }, { abbr:'DEN', color:'#FB4F14' },
+  { abbr:'DET', color:'#0076B6' }, { abbr:'GB',  color:'#203731' },
+  { abbr:'HOU', color:'#03202F' }, { abbr:'IND', color:'#002C5F' },
+  { abbr:'JAX', color:'#006778' }, { abbr:'KC',  color:'#E31837' },
+  { abbr:'LAC', color:'#0080C6' }, { abbr:'LAR', color:'#003594' },
+  { abbr:'LV',  color:'#A5ACAF' }, { abbr:'MIA', color:'#008E97' },
+  { abbr:'MIN', color:'#4F2683' }, { abbr:'NE',  color:'#002244' },
+  { abbr:'NO',  color:'#D3BC8D' }, { abbr:'NYG', color:'#0B2265' },
+  { abbr:'NYJ', color:'#125740' }, { abbr:'PHI', color:'#004C54' },
+  { abbr:'PIT', color:'#FFB612' }, { abbr:'SEA', color:'#002244' },
+  { abbr:'SF',  color:'#AA0000' }, { abbr:'TB',  color:'#D50A0A' },
+  { abbr:'TEN', color:'#4B92DB' }, { abbr:'WSH', color:'#5A1414' },
+];
+
+const picker = document.getElementById('team-picker');
+let selectedTeam = null;
+
+TEAMS.forEach(team => {
+  const btn = document.createElement('div');
+  btn.className = 'team-option';
+  btn.innerHTML = `
+    <div class="team-dot" style="background:${team.color}"></div>
+    <span>${team.abbr}</span>`;
+  btn.onclick = () => selectTeam(team, btn);
+  picker.appendChild(btn);
+});
+
+function selectTeam(team, btn) {
+  document.querySelectorAll('.team-option').forEach(b => {
+    b.classList.remove('selected');
+    b.style.borderColor = '';
+    b.style.background = '';
+  });
+  btn.classList.add('selected');
+  btn.style.borderColor = team.color;
+  btn.style.background = team.color + '22';
+  selectedTeam = team;
+  document.getElementById('selected-team-label').textContent = team.abbr;
+}
+
+// ── Invite code formatting ────────────────────────────────────
+function formatCode(input) {
+  let val = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4,8);
+  input.value = val;
+  input.classList.remove('valid','invalid');
+
+  const result = document.getElementById('invite-result');
+  if (result) result.style.display = 'none';
+}
+
+// ── Code validation ───────────────────────────────────────────
+const VALID_CODES = ['GRDN-X4K2', 'TEST-1234'];
+
+function validateCode() {
+  const input = document.getElementById('invite-input');
+  const result = document.getElementById('invite-result');
+  const code = input.value.toUpperCase();
+
+  if (VALID_CODES.includes(code)) {
+    input.classList.add('valid');
+    result.className = 'invite-result success';
+    result.style.display = 'flex';
+    result.innerHTML = '✓ The Boys · 10 members · Welcome!';
+    setTimeout(() => alert('Joined league! → redirect to /picks'), 1000);
+  } else {
+    input.classList.add('invalid');
+    result.className = 'invite-result error';
+    result.style.display = 'flex';
+    result.innerHTML = '✗ Invalid code. Check with your commissioner.';
+  }
+}
+
+function validateWaitingCode() {
+  const input = document.getElementById('waiting-invite');
+  const code = input.value.toUpperCase();
+  if (VALID_CODES.includes(code)) {
+    input.style.borderColor = 'var(--green)'

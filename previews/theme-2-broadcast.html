@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme 2 — Broadcast</title>
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050508;
+    --panel: #0c0c14;
+    --panel2: #12121e;
+    --border: #1c1c2e;
+    --blue: #0047ff;
+    --blue-glow: rgba(0, 71, 255, 0.3);
+    --cyan: #00d4ff;
+    --text: #ffffff;
+    --muted: #4a4a6a;
+    --green: #00ff88;
+    --red: #ff3355;
+    --gold: #ffd700;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Roboto Condensed', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Top broadcast bar */
+  .broadcast-bar {
+    background: var(--blue);
+    padding: 0 24px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .broadcast-logo {
+    font-family: 'Antonio', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
+  }
+
+  .broadcast-ticker {
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: 0.8;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .broadcast-time {
+    font-family: 'Antonio', sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+
+  .page { max-width: 820px; margin: 0 auto; padding: 0 16px 60px; }
+
+  /* Week hero */
+  .week-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .hero-cell {
+    background: var(--panel);
+    padding: 20px 24px;
+  }
+
+  .hero-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .hero-value {
+    font-family: 'Antonio', sans-serif;
+    font-size: 42px;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .hero-value.blue { color: var(--cyan); }
+  .hero-value.green { color: var(--green); }
+
+  .hero-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Section header */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0 10px;
+    margin-bottom: 4px;
+  }
+
+  .section-stripe {
+    width: 4px;
+    height: 20px;
+    background: var(--blue);
+  }
+
+  .section-label {
+    font-family: 'Antonio', sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .section-date {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-left: auto;
+  }
+
+  /* Game cards — horizontal broadcast style */
+  .games { display: flex; flex-direction: column; gap: 2px; margin-bottom: 20px; }
+
+  .game-card {
+    background: var(--panel);
+    border-left: 3px solid transparent;
+    display: grid;
+    grid-template-columns: 28px 1fr auto 1fr 28px;
+    align-items: stretch;
+    transition: border-color 0.2s;
+    animation: fadeUp 0.3s ease forwards;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  @keyframes fadeUp { to { opacity: 1; } }
+  .game-card:nth-child(1) { animation-delay: 0.05s; }
+  .game-card:nth-child(2) { animation-delay: 0.1s; }
+  .game-card:nth-child(3) { animation-delay: 0.15s; }
+  .game-card:nth-child(4) { animation-delay: 0.2s; }
+
+  .game-card:hover { background: var(--panel2); }
+  .game-card.picked { border-left-color: var(--blue); }
+  .game-card.correct { border-left-color: var(--green); }
+  .game-card.wrong { border-left-color: var(--red); }
+  .game-card.live { border-left-color: var(--cyan); }
+
+  /* Pick indicator column */
+  .pick-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel2);
+  }
+
+  .pick-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .pick-dot.selected { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+
+  /* Team block */
+  .team-block {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+  }
+
+  .team-block.home { flex-direction: row-reverse; text-align: right; }
+
+  .team-block.selected-away { background: rgba(0, 71, 255, 0.06); }
+  .team-block.selected-home { background: rgba(0, 71, 255, 0.06); }
+
+  .team-emoji { font-size: 28px; line-height: 1; }
+
+  .team-abbr {
+    font-family: 'Antonio', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .team-full {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-top: 1px;
+  }
+
+  .team-record {
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Middle info */
+  .game-mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    background: var(--panel2);
+    min-width: 100px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    gap: 3px;
+  }
+
+  .game-status {
+    font-family: 'Antonio', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+
+  .game-status.live { color: var(--cyan); animation: blink 1.2s infinite; }
+  .game-status.final { color: var(--muted); }
+  .game-status.open { color: var(--green); }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .score-display {
+    font-family: 'Antonio', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .spread-display {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .kickoff-time {
+    font-family: 'Antonio', sans-serif;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  /* Live ticker strip under card */
+  .live-strip {
+    grid-column: 1 / -1;
+    background: rgba(0, 212, 255, 0.05);
+    border-top: 1px solid rgba(0, 212, 255, 0.15);
+    padding: 6px 32px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 1px;
+  }
+
+  /* Result strip */
+  .result-strip {
+    grid-column: 1 / -1;
+    padding: 5px 32px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    display: flex;
+    gap: 16px;
+  }
+
+  .result-strip.correct { background: rgba(0, 255, 136, 0.05); color: var(--green); border-top: 1px solid rgba(0,255,136,0.1); }
+  .result-strip.wrong { background: rgba(255, 51, 85, 0.05); color: var(--red); border-top: 1px solid rgba(255,51,85,0.1); }
+
+  /* Bottom leaderboard */
+  .lb-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .lb-cell {
+    background: var(--panel);
+    padding: 14px 16px;
+    position: relative;
+  }
+
+  .lb-rank {
+    font-family: 'Antonio', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .lb-name {
+    font-family: 'Antonio', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+
+  .lb-pts {
+    font-family: 'Antonio', sans-serif;
+    font-size: 32px;
+    color: var(--cyan);
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  .lb-cell.me { background: rgba(0, 71, 255, 0.08); border-top: 2px solid var(--blue); }
+  .lb-cell.first .lb-pts { color: var(--gold); }
+
+  .lb-delta {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-size: 11px;
+    color: var(--green);
+  }
+</style>
+</head>
+<body>
+
+<div class="broadcast-bar">
+  <div class="broadcast-logo">GRIDIRON</div>
+  <div class="broadcast-ticker">THE BOYS LEAGUE · WEEK 7 OF 18 · SEASON 2024</div>
+  <div class="broadcast-time">SUN 2:47 PM</div>
+</div>
+
+<div class="page">
+
+  <div class="week-hero">
+    <div class="hero-cell">
+      <div class="hero-label">Week</div>
+      <div class="hero-value">07</div>
+      <div class="hero-sub">Oct 17–21, 2024</div>
+    </div>
+    <div class="hero-cell">
+      <div class="hero-label">Your picks</div>
+      <div class="hero-value blue">7<span style="font-size:24px;color:var(--muted)">/13</span></div>
+      <div class="hero-sub">6 games remaining</div>
+    </div>
+    <div class="hero-cell">
+      <div class="hero-label">Points this week</div>
+      <div class="hero-value green">12</div>
+      <div class="hero-sub">Rank #2 of 10</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-stripe"></div>
+    <div class="section-label">Thursday Night Football</div>
+    <div class="section-date">THU OCT 17</div>
+  </div>
+  <div class="games">
+    <div class="game-card correct" style="border-left-color:var(--green)">
+      <div class="pick-col"><div class="pick-dot selected"></div></div>
+      <div class="team-block away selected-away">
+        <div class="team-emoji">🦅</div>
+        <div>
+          <div class="team-abbr">PHI</div>
+          <div class="team-full">Eagles · 5-1</div>
+        </div>
+      </div>
+      <div class="game-mid">
+        <div class="game-status final">FINAL</div>
+        <div class="score-display">28–14</div>
+        <div class="spread-display">PHI -4.5</div>
+      </div>
+      <div class="team-block home">
+        <div class="team-emoji">🐻</div>
+        <div>
+          <div class="team-abbr">CHI</div>
+          <div class="team-full">Bears · 2-4</div>
+        </div>
+      </div>
+      <div class="pick-col"></div>
+      <div class="result-strip correct">
+        <span>✓ CORRECT</span>
+        <span>+1 PT</span>
+        <span>SOLE PICK · +1 BONUS</span>
+        <span style="margin-left:auto;color:var(--muted)">TOTAL +2 PTS</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-stripe"></div>
+    <div class="section-label">Sunday Games</div>
+    <div class="section-date">SUN OCT 20</div>
+  </div>
+  <div class="games">
+
+    <!-- Live -->
+    <div class="game-card live picked">
+      <div class="pick-col" style="background:rgba(0,212,255,0.05)"><div class="pick-dot selected" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></div></div>
+      <div class="team-block away">
+        <div class="team-emoji">👑</div>
+        <div>
+          <div class="team-abbr">KC</div>
+          <div class="team-full">Chiefs · 5-0</div>
+        </div>
+      </div>
+      <div class="game-mid">
+        <div class="game-status live">● Q3 11:42</div>
+        <div class="score-display">17–21</div>
+        <div class="spread-display">KC -3.5</div>
+      </div>
+      <div class="team-block home selected-home">
+        <div class="team-emoji">🪶</div>
+        <div>
+          <div class="team-abbr">BAL</div>
+          <div class="team-full">Ravens · 4-2</div>
+        </div>
+      </div>
+      <div class="pick-col" style="background:rgba(0,212,255,0.05)"><div class="pick-dot selected" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></div></div>
+      <div class="live-strip">
+        <span>🏈 BAL possession</span>
+        <span>3rd & 4 at BAL 32</span>
+        <span>Lamar Jackson rush for 6 yds — 1ST DOWN</span>
+        <span>🔴 RED ZONE</span>
+      </div>
+    </div>
+
+    <!-- Open unpicked -->
+    <div class="game-card">
+      <div class="pick-col"></div>
+      <div class="team-block away">
+        <div class="team-emoji">🦬</div>
+        <div>
+          <div class="team-abbr">BUF</div>
+          <div class="team-full">Bills · 5-1</div>
+        </div>
+      </div>
+      <div class="game-mid">
+        <div class="game-status open">OPEN</div>
+        <div class="kickoff-time">1:00 PM</div>
+        <div class="spread-display">BUF -6</div>
+      </div>
+      <div class="team-block home">
+        <div class="team-emoji">✈️</div>
+        <div>
+          <div class="team-abbr">NYJ</div>
+          <div class="team-full">Jets · 2-4</div>
+        </div>
+      </div>
+      <div class="pick-col"></div>
+    </div>
+
+    <!-- Wrong -->
+    <div class="game-card wrong">
+      <div class="pick-col"><div class="pick-dot" style="background:var(--red)"></div></div>
+      <div class="team-block away selected-away">
+        <div class="team-emoji">🔴</div>
+        <div>
+          <div class="team-abbr">SF</div>
+          <div class="team-full">49ers · 3-3</div>
+        </div>
+      </div>
+      <div class="game-mid">
+        <div class="game-status final">FINAL</div>
+        <div class="score-display">17–24</div>
+        <div class="spread-display">SF -2</div>
+      </div>
+      <div class="team-block home">
+        <div class="team-emoji">🦅</div>
+        <div>
+          <div class="team-abbr">SEA</div>
+          <div class="team-full">Seahawks · 4-2</div>
+        </div>
+      </div>
+      <div class="pick-col"></div>
+      <div class="result-strip wrong">
+        <span>✗ WRONG</span>
+        <span>0 PTS</span>
+        <span style="margin-left:auto;color:var(--muted)">SEA won as underdog · upset</span>
+      </div>
+    </div>
+
+    <!-- Open picked -->
+    <div class="game-card picked">
+      <div class="pick-col"><div class="pick-dot selected"></div></div>
+      <div class="team-block away selected-away">
+        <div class="team-emoji">🐯</div>
+        <div>
+          <div class="team-abbr">CIN</div>
+          <div class="team-full">Bengals · 3-3</div>
+        </div>
+      </div>
+      <div class="game-mid">
+        <div class="game-status open">OPEN</div>
+        <div class="kickoff-time">4:25 PM</div>
+        <div class="spread-display">CIN -1.5</div>
+      </div>
+      <div class="team-block home">
+        <div class="team-emoji">⬛</div>
+        <div>
+          <div class="team-abbr">PIT</div>
+          <div class="team-full">Steelers · 4-2</div>
+        </div>
+      </div>
+      <div class="pick-col"></div>
+    </div>
+
+  </div>
+
+  <div class="section-head">
+    <div class="section-stripe" style="background:var(--gold)"></div>
+    <div class="section-label" style="color:var(--gold)">Week 7 Standings</div>
+  </div>
+  <div class="lb-grid">
+    <div class="lb-cell first">
+      <div class="lb-rank">#1</div>
+      <div class="lb-name">MARCUS</div>
+      <div class="lb-pts">14</div>
+    </div>
+    <div class="lb-cell me">
+      <div class="lb-rank">#2 · YOU</div>
+      <div class="lb-name">JORDAN</div>
+      <div class="lb-pts" style="color:var(--cyan)">12</div>
+      <div class="lb-delta">▲2</div>
+    </div>
+    <div class="lb-cell">
+      <div class="lb-rank">#3</div>
+      <div class="lb-name">TAYLOR</div>
+      <div class="lb-pts" style="color:var(--muted)">9</div>
+    </div>
+    <div class="lb-cell">
+      <div class="lb-rank">#4</div>
+      <div class="lb-name">ALEX</div>
+      <div class="lb-pts" style="color:var(--muted)">8</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

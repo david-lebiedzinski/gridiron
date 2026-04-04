@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seasonal Themes Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Theme switcher bar ── */
+.theme-switcher {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: #060810;
+  border-bottom: 1px solid #1e2733;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  overflow-x: auto;
+}
+
+.switcher-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #4a5568;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.theme-btn {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 3px;
+  border: 1px solid #1e2733;
+  background: transparent;
+  color: #4a5568;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.theme-btn:hover { color: #e8eaf0; border-color: #4a5568; }
+.theme-btn.active { color: #e8eaf0; border-color: currentColor; }
+
+/* Active colors per theme */
+.theme-btn.active[data-theme="thanksgiving"] { color: #e8821a; border-color: #e8821a; }
+.theme-btn.active[data-theme="christmas"] { color: #4ade80; border-color: #4ade80; }
+.theme-btn.active[data-theme="superbowl"] { color: #f5c842; border-color: #f5c842; }
+.theme-btn.active[data-theme="international"] { color: #60a5fa; border-color: #60a5fa; }
+.theme-btn.active[data-theme="playoffs"] { color: #c8cdd6; border-color: #c8cdd6; }
+
+/* ── Base layout ── */
+body {
+  background: #080a0f;
+  color: #e8eaf0;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-top: 54px;
+}
+
+/* ── Canvas for particle effects ── */
+#atmosphere-canvas {
+  position: fixed;
+  top: 54px; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Overlay for themed tint ── */
+#theme-overlay {
+  position: fixed;
+  top: 54px; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.8s ease;
+}
+
+/* ── Page content ── */
+.page {
+  position: relative;
+  z-index: 10;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 28px 16px 80px;
+}
+
+/* ── Theme badge ── */
+.theme-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: all 0.6s ease;
+}
+
+/* ── Week header ── */
+.week-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #1e2733;
+}
+
+.week-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.week-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 60px;
+  letter-spacing: 4px;
+  line-height: 0.9;
+}
+
+.week-title .num { color: #f5a623; }
+
+.week-stats {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+.stat { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.stat-val { font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700; }
+.stat-label { font-size: 9px; letter-spacing: 2px; color: #4a5568; text-transform: uppercase; }
+
+/* ── Section label ── */
+.section-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #4a5568;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: #1e2733; }
+
+/* ── Game cards ── */
+.games { display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
+
+.game-card {
+  background: #0d1117;
+  border: 1px solid #1e2733;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s;
+}
+
+.game-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--team-stripe);
+  z-index: 2;
+}
+
+.game-main {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.team-side {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: opacity 0.25s, filter 0.25s, background 0.25s;
+}
+
+.team-side.home { flex-direction: row-reverse; text-align: right; }
+
+.game-card.picked-away .team-side.home,
+.game-card.picked-home .team-side.away {
+  opacity: 0.25;
+  filter: saturate(0.2);
+}
+
+.team-side.selected { background: var(--team-color-bg); }
+
+.team-badge {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 1px;
+  color: #fff;
+  flex-shrink: 0;
+  transition: box-shadow 0.25s;
+}
+
+.team-side.selected .team-badge { box-shadow: 0 0 14px var(--badge-glow); }
+
+.team-info { flex: 1; min-width: 0; }
+
+.team-abbr {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.team-name { font-size: 10px; color: #4a5568; letter-spacing: 0.5px; margin-top: 1px; }
+.team-record { font-size: 10px; color: #4a5568; margin-top: 1px; }
+
+.your-pick-label {
+  position: absolute;
+  bottom: 5px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.25s;
+  color: var(--pick-label-color, #aaa);
+}
+
+.team-side.away .your-pick-label { right: 10px; }
+.team-side.home .your-pick-label { left: 10px; }
+.team-side.selected .your-pick-label { opacity: 1; }
+
+.game-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-left: 1px solid #1e2733;
+  border-right: 1px solid #1e2733;
+  min-width: 100px;
+  gap: 4px;
+  background: rgba(0,0,0,0.2);
+}
+
+.vs-text { font-family: 'Oswald', sans-serif; font-size: 9px; color: #4a5568; letter-spacing: 2px; }
+.score { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; }
+.spread { font-size: 10px; color: #f5a623; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+.kickoff { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 500; }
+.status-badge {
+  font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 2px; font-family: 'Oswald', sans-serif;
+}
+.status-badge.open { background: rgba(34,197,94,0.1); color: #22c55e; }
+.status-badge.live { background: rgba(245,166,35,0.12); color: #f5a623; animation: blink 1.4s infinite; }
+.status-badge.final { background: rgba(255,255,255,0.05); color: #4a5568; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.result-bar {
+  padding: 6px 16px;
+  font-size: 10px;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 1.5px;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid transparent;
+}
+.result-bar.correct { background: rgba(34,197,94,0.06); color: #22c55e; border-top-color: rgba(34,197,94,0.15); }
+.result-bar.wrong { background: rgba(239,68,68,0.06); color: #ef4444; border-top-color: rgba(239,68,68,0.15); }
+
+.live-bar {
+  border-top: 1px solid #1e2733;
+  background: rgba(245,166,35,0.04);
+  padding: 6px 16px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.live-bar span { font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; }
+.live-bar .possession { color: #f5a623; }
+.live-bar .play { color: #4a5568; flex: 1; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Leaderboard ── */
+.leaderboard { background: #0d1117; border: 1px solid #1e2733; border-radius: 6px; overflow: hidden; }
+.lb-header { padding: 10px 16px; border-bottom: 1px solid #1e2733; font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 3px; color: #4a5568; text-transform: uppercase; }
+.lb-row { display: grid; grid-template-columns: 28px 28px 1fr auto auto; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid #1e2733; }
+.lb-row:last-child { border-bottom: none; }
+.lb-row.me { background: rgba(106,163,255,0.04); }
+.lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #4a5568; text-align: center; }
+.lb-rank.gold { color: #f5a623; }
+.lb-avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; font-family: 'Oswald', sans-serif; }
+.lb-name { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 500; }
+.lb-name.me { color: #6aa3ff; }
+.lb-correct { font-size: 10px; color: #4a5568; text-align: right; }
+.lb-pts { font-family: 'Bebas Neue', sans-serif; font-size: 20px; min-width: 32px; text-align: right; }
+</style>
+</head>
+<body>
+
+<!-- Theme switcher -->
+<div class="theme-switcher">
+  <span class="switcher-label">Theme</span>
+  <button class="theme-btn active" data-theme="thanksgiving">🍂 Thanksgiving</button>
+  <button class="theme-btn" data-theme="christmas">❄️ Christmas</button>
+  <button class="theme-btn" data-theme="superbowl">🏆 Super Bowl</button>
+  <button class="theme-btn" data-theme="international">🌍 International</button>
+  <button class="theme-btn" data-theme="playoffs">⚡ Playoffs</button>
+</div>
+
+<!-- Atmosphere canvas -->
+<canvas id="atmosphere-canvas"></canvas>
+
+<!-- Themed overlay -->
+<div id="theme-overlay"></div>
+
+<div class="page">
+  <!-- Theme banner -->
+  <div class="theme-banner" id="theme-banner"></div>
+
+  <!-- Week header -->
+  <div class="week-header">
+    <div class="week-meta-row">
+      <div class="week-title">WEEK <span class="num" id="week-num">12</span></div>
+      <div class="week-stats">
+        <div class="stat">
+          <div class="stat-val">7<span style="font-size:14px;color:#4a5568">/13</span></div>
+          <div class="stat-label">Picked</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" style="color:#22c55e">12</div>
+          <div class="stat-label">Points</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">#2</div>
+          <div class="stat-label">Rank</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section -->
+  <div class="section-label" id="section-label">Thanksgiving Day · Nov 28</div>
+  <div class="games">
+
+    <!-- Game 1: picked correctly -->
+    <div class="game-card picked-away correct"
+         style="--team-stripe: linear-gradient(90deg,#004C54 50%,#C83803 50%)">
+      <div class="game-main">
+        <div class="team-side away selected"
+             style="--team-color-bg:rgba(0,76,84,0.18);--badge-glow:rgba(0,96,104,0.7)">
+          <div class="team-badge" style="background:linear-gradient(135deg,#004C54,#006068)">PHI</div>
+          <div class="team-info">
+            <div class="team-abbr">PHI</div>
+            <div class="team-name">Eagles</div>
+            <div class="team-record">8–3</div>
+          </div>
+          <div class="your-pick-label" style="--pick-label-color:#20d0dc">YOUR PICK ✓</div>
+        </div>
+        <div class="game-center">
+          <div class="status-badge final">Final</div>
+          <div class="score">28–14</div>
+          <div class="spread">PHI –4.5</div>
+        </div>
+        <div class="team-side home"
+             style="--badge-glow:rgba(200,56,3,0.6)">
+          <div class="team-badge" style="background:linear-gradient(135deg,#0B1C3E,#1a2a5e)">CHI</div>
+          <div class="team-info">
+            <div class="team-abbr">CHI</div>
+            <div class="team-name">Bears</div>
+            <div class="team-record">4–7</div>
+          </div>
+        </div>
+      </div>
+      <div class="result-bar correct">
+        <span>✓ CORRECT · SOLE PICK BONUS</span><span>+2 PTS</span>
+      </div>
+    </div>
+
+    <!-- Game 2: live -->
+    <div class="game-card picked-home live"
+         style="--team-stripe: linear-gradient(90deg,#E31837 50%,#241773 50%)">
+      <div class="game-main">
+        <div class="team-side away"
+             style="--badge-glow:rgba(255,184,28,0.6)">
+          <div class="team-badge" style="background:linear-gradient(135deg,#E31837,#c01020)">KC</div>
+          <div class="team-info">
+            <div class="team-abbr">KC</div>
+            <div class="team-name">Chiefs</div>
+            <div class="team-record">9–1</div>
+          </div>
+        </div>
+        <div class="game-center">
+          <div class="status-badge live">● Q3 8:44</div>
+          <div class="score" style="color:#f5a623">17–21</div>
+          <div class="spread">KC –3.5</div>
+        </div>
+        <div class="team-side home selected"
+             style="--team-color-bg:rgba(36,23,115,0.2);--badge-glow:rgba(158,124,12,0.7)">
+          <div class="team-badge" style="background:linear-gradient(135deg,#241773,#3a28a0)">BAL</div>
+          <div class="team-info">
+            <div class="team-abbr">BAL</div>
+            <div class="team-name">Ravens</div>
+            <div class="team-record">7–4</div>
+          </div>
+          <div class="your-pick-label" style="--pick-label-color:#c9a010">YOUR PICK ↑</div>
+        </div>
+      </div>
+      <div class="live-bar">
+        <span class="possession">🏈 BAL</span>
+        <span>3rd & 4 · BAL 32</span>
+        <span class="play">Lamar Jackson rush 6yds — 1ST DOWN</span>
+      </div>
+    </div>
+
+    <!-- Game 3: open, no pick -->
+    <div class="game-card"
+         style="--team-stripe: linear-gradient(90deg,#00338D 50%,#125740 50%)">
+      <div class="game-main">
+        <div class="team-side away" style="--badge-glow:rgba(198,12,48,0.5)">
+          <div class="team-badge" style="background:linear-gradient(135deg,#00338D,#0044bb)">BUF</div>
+          <div class="team-info">
+            <div class="team-abbr">BUF</div>
+            <div class="team-name">Bills</div>
+            <div class="team-record">9–2</div>
+          </div>
+        </div>
+        <div class="game-center">
+          <div class="status-badge open">Open</div>
+          <div class="kickoff">4:30 PM</div>
+          <div class="spread">BUF –6</div>
+        </div>
+        <div class="team-side home" style="--badge-glow:rgba(0,0,0,0.3)">
+          <div class="team-badge" style="background:linear-gradient(135deg,#125740,#1a7a58)">NYJ</div>
+          <div class="team-info">
+            <div class="team-abbr">NYJ</div>
+            <div class="team-name">Jets</div>
+            <div class="team-record">3–8</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="section-label">Standings</div>
+  <div class="leaderboard">
+    <div class="lb-header">Week 12 · This Week</div>
+    <div class="lb-row">
+      <div class="lb-rank gold">1</div>
+      <div class="lb-avatar" style="background:#1a3a1a;color:#4ade80">MK</div>
+      <div class="lb-name">Marcus</div>
+      <div class="lb-correct">9/13</div>
+      <div class="lb-pts" style="color:#f5a623">14</div>
+    </div>
+    <div class="lb-row me">
+      <div class="lb-rank" style="color:#e8eaf0">2</div>
+      <div class="lb-avatar" style="background:#1a2a4a;color:#6aa3ff">JD</div>
+      <div class="lb-name me">You</div>
+      <div class="lb-correct" style="color:#6aa3ff">7/13</div>
+      <div class="lb-pts" style="color:#e8eaf0">12</div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-rank">3</div>
+      <div class="lb-avatar" style="background:#3a1a1a;color:#f87171">TR</div>
+      <div class="lb-name">Taylor</div>
+      <div class="lb-correct">6/13</div>
+      <div class="lb-pts" style="color:#4a5568">9</div>
+    </div>
+    <div class="lb-row">
+      <div class="lb-rank">4</div>
+      <div class="lb-avatar" style="background:#2a1a3a;color:#c084fc">AS</div>
+      <div class="lb-name">Alex</div>
+      <div class="lb-correct">5/13</div>
+      <div class="lb-pts" style="color:#4a5568">8</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Particle system ──────────────────────────────────────────
+const canvas = document.getElementById('atmosphere-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let animFrame;
+let currentTheme = 'thanksgiving';
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ── Theme definitions ─────────────────────────────────────────
+const themes = {
+  thanksgiving: {
+    label: '🍂 Thanksgiving Week · Nov 28',
+    bannerBg: 'rgba(80,35,5,0.4)',
+    bannerBorder: '#8B4513',
+    bannerColor: '#e8a05a',
+    overlay: 'radial-gradient(ellipse at 50% 0%, rgba(80,35,5,0.35) 0%, transparent 70%)',
+    weekNum: '12',
+    sectionLabel: 'Thanksgiving Day · Nov 28',
+    particles: () => makeLeaves(),
+    tick: tickLeaves,
+  },
+  christmas: {
+    label: '❄️ Christmas Week · Dec 25',
+    bannerBg: 'rgba(5,40,15,0.5)',
+    bannerBorder: '#166534',
+    bannerColor: '#4ade80',
+    overlay: 'radial-gradient(ellipse at 50% 0%, rgba(5,30,15,0.4) 0%, transparent 70%)',
+    weekNum: '17',
+    sectionLabel: 'Christmas Day · Dec 25',
+    particles: () => makeSnow(),
+    tick: tickSnow,
+  },
+  superbowl: {
+    label: '🏆 Super Bowl LIX · New Orleans',
+    bannerBg: 'rgba(60,45,0,0.5)',
+    bannerBorder: '#b8960c',
+    bannerColor: '#f5c842',
+    overlay: 'radial-gradient(ellipse at 50% 30%, rgba(80,60,0,0.3) 0%, transparent 65%)',
+    weekNum: 'SB',
+    sectionLabel: 'Super Bowl LIX · Feb 9 · New Orleans',
+    particles: () => makeConfetti(),
+    tick: tickConfetti,
+  },
+  international: {
+    label: '🇬🇧 NFL London · Wembley Stadium',
+    bannerBg: 'rgba(0,15,50,0.5)',
+    bannerBorder: '#1d4ed8',
+    bannerColor: '#93c5fd',
+    overlay: [
+      'radial-gradient(ellipse at 50% 0%, rgba(0,10,40,0.4) 0%, transparent 60%)',
+    ].join(','),
+    weekNum: '6',
+    sectionLabel: 'NFL London · Wembley · Sun Oct 6',
+    particles: () => makeRain(),
+    tick: tickRain,
+  },
+  playoffs: {
+    label: null, // custom banner injected via DOM
+    bannerBg: 'rgba(18,22,28,0.7)',
+    bannerBorder: '#6b7a8d',
+    bannerColor: '#c8cdd6',
+    overlay: 'radial-gradient(ellipse at 50% 0%, rgba(8,12,18,0.55) 0%, transparent 70%)',
+    weekNum: 'DIV',
+    sectionLabel: 'Divisional Round · Jan 18',
+    particles: () => makeSilverSparks(),
+    tick: tickSilverSparks,
+  },
+};
+
+// ── Leaf particles ────────────────────────────────────────────
+function makeLeaves() {
+  const colors = ['#e8821a','#d4580a','#c44a10','#a83800','#f5a623','#8B4513','#d4860a'];
+  particles = Array.from({length: 40}, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * canvas.height,
+    size: 8 + Math.random() * 10,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    speed: 1.2 + Math.random() * 1.8,
+    swing: Math.random() * Math.PI * 2,
+    swingSpeed: 0.02 + Math.random() * 0.03,
+    swingAmt: 40 + Math.random() * 60,
+    rot: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.06,
+    opacity: 0.6 + Math.random() * 0.4,
+  }));
+}
+
+function tickLeaves() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.y += p.speed;
+    p.swing += p.swingSpeed;
+    p.x += Math.sin(p.swing) * 1.2;
+    p.rot += p.rotSpeed;
+    if (p.y > canvas.height + 30) {
+      p.y = -20;
+      p.x = Math.random() * canvas.width;
+    }
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.globalAlpha = p.opacity;
+    ctx.fillStyle = p.color;
+    // Draw a simple leaf shape
+    ctx.beginPath();
+    ctx.ellipse(0, 0, p.size * 0.5, p.size, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Leaf vein
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(0, -p.size);
+    ctx.lineTo(0, p.size);
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+// ── Snow particles ────────────────────────────────────────────
+function makeSnow() {
+  particles = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * canvas.height,
+    r: 1.5 + Math.random() * 4,
+    speed: 0.8 + Math.random() * 2,
+    drift: (Math.random() - 0.5) * 0.5,
+    opacity: 0.4 + Math.random() * 0.6,
+    twinkle: Math.random() * Math.PI * 2,
+  }));
+}
+
+function tickSnow() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw a few string lights across the top
+  const lightColors = ['#ff4444','#44ff44','#4444ff','#ffff44','#ff44ff'];
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    const y = 70 + i * 30;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    // Drape curve
+    for (let x = 0; x <= canvas.width; x += 2) {
+      const sag = 8 * Math.sin((x / canvas.width) * Math.PI);
+      ctx.lineTo(x, y + sag);
+    }
+    ctx.stroke();
+    // Bulbs
+    for (let b = 40; b < canvas.width; b += 60) {
+      const sag = 8 * Math.sin((b / canvas.width) * Math.PI);
+      const col = lightColors[Math.floor(b / 60) % lightColors.length];
+      ctx.beginPath();
+      ctx.arc(b, y + sag + 5, 4, 0, Math.PI * 2);
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.7;
+      ctx.fill();
+      // Glow
+      const grd = ctx.createRadialGradient(b, y+sag+5, 0, b, y+sag+5, 14);
+      grd.addColorStop(0, col.replace(')', ',0.3)').replace('rgb','rgba'));
+      grd.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(b, y+sag+5, 14, 0, Math.PI*2);
+      ctx.fillStyle = grd;
+      ctx.globalAlpha = 0.4;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  particles.forEach(p => {
+    p.y += p.speed;
+    p.x += p.drift;
+    p.twinkle += 0.03;
+    if (p.y > canvas.height + 10) { p.y = -10; p.x = Math.random() * canvas.width; }
+    if (p.x > canvas.width + 10) p.x = -10;
+    if (p.x < -10) p.x = canvas.width + 10;
+    const alpha = p.opacity * (0.8 + 0.2 * Math.sin(p.twinkle));
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,240,255,${alpha})`;
+    ctx.fill();
+    if (p.r > 2.5) {
+      // Snowflake cross
+      ctx.strokeStyle = `rgba(200,230,255,${alpha * 0.5})`;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(p.x - p.r*1.5, p.y); ctx.lineTo(p.x + p.r*1.5, p.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x, p.y - p.r*1.5); ctx.lineTo(p.x, p.y + p.r*1.5); ctx.stroke();
+    }
+  });
+}
+
+// ── Confetti ──────────────────────────────────────────────────
+function makeConfetti() {
+  const colors = ['#f5c842','#ffffff','#ff6b6b','#4ecdc4','#45b7d1','#96e6a1','#dda0dd'];
+  particles = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * canvas.height * 0.5,
+    w: 6 + Math.random() * 8,
+    h: 3 + Math.random() * 5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    speed: 1.5 + Math.random() * 2.5,
+    drift: (Math.random() - 0.5) * 1.5,
+    rot: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.1,
+    opacity: 0.7 + Math.random() * 0.3,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.04 + Math.random() * 0.04,
+  }));
+}
+
+function tickConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Gold shimmer at top
+  const grd = ctx.createLinearGradient(0, 54, 0, 200);
+  grd.addColorStop(0, 'rgba(200,160,0,0.08)');
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, canvas.width, 200);
+
+  particles.forEach(p => {
+    p.y += p.speed;
+    p.wobble += p.wobbleSpeed;
+    p.x += p.drift + Math.sin(p.wobble) * 0.8;
+    p.rot += p.rotSpeed;
+    if (p.y > canvas.height + 20) {
+      p.y = -20;
+      p.x = Math.random() * canvas.width;
+    }
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.globalAlpha = p.opacity;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
+  });
+}
+
+// ── Rain (London) ─────────────────────────────────────────────
+function makeRain() {
+  particles = Array.from({length: 150}, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * canvas.height,
+    len: 8 + Math.random() * 16,
+    speed: 8 + Math.random() * 6,
+    opacity: 0.1 + Math.random() * 0.25,
+  }));
+}
+
+function tickRain() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Foggy top overlay
+  const grd = ctx.createLinearGradient(0, 0, 0, 250);
+  grd.addColorStop(0, 'rgba(20,30,50,0.18)');
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, canvas.width, 250);
+
+  ctx.strokeStyle = 'rgba(160,190,220,1)';
+  ctx.lineWidth = 0.8;
+  particles.forEach(p => {
+    p.y += p.speed;
+    p.x -= p.speed * 0.2;
+    if (p.y > canvas.height + 20) {
+      p.y = -20;
+      p.x = Math.random() * canvas.width;
+    }
+    ctx.globalAlpha = p.opacity;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x - p.len * 0.2, p.y + p.len);
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ── Silver Sparks (Playoffs) ──────────────────────────────────
+function makeSilverSparks() {
+  particles = Array.from({length: 80}, () => newSpark());
+}
+
+function newSpark() {
+  const silver = [
+    'rgba(200,210,220,',
+    'rgba(180,195,210,',
+    'rgba(220,225,232,',
+    'rgba(160,175,190,',
+    'rgba(240,242,245,',
+  ];
+  return {
+    x: Math.random() * canvas.width,
+    y: canvas.height + 10,
+    r: 0.6 + Math.random() * 2,
+    speedY: 1.2 + Math.random() * 2.8,
+    speedX: (Math.random() - 0.5) * 1.2,
+    life: 1.0,
+    decay: 0.003 + Math.random() * 0.007,
+    color: silver[Math.floor(Math.random() * silver.length)],
+    // Some sparks streak like lines
+    streak: Math.random() > 0.6,
+    len: 4 + Math.random() * 10,
+    twinkle: Math.random() * Math.PI * 2,
+  };
+}
+
+function tickSilverSparks() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Cold steel vignette — dark top, very subtle
+  const topGrd = ctx.createLinearGradient(0, 0, 0, 180);
+  topGrd.addColorStop(0, 'rgba(5,8,14,0.25)');
+  topGrd.addColorStop(1, 'transparent');
+  ctx.fillStyle = topGrd;
+  ctx.fillRect(0, 0, canvas.width, 180);
+
+  // Subtle horizontal sheen lines (like stadium lights reflecting on chrome)
+  for (let i = 0; i < 3; i++) {
+    const y = 90 + i * 120 + Math.sin(Date.now() * 0.0003 + i) * 8;
+    const sheenGrd = ctx.createLinearGradient(0, y - 1, 0, y + 1);
+    sheenGrd.addColorStop(0, 'transparent');
+    sheenGrd.addColorStop(0.5, `rgba(200,210,220,${0.04 - i * 0.01})`);
+    sheenGrd.addColorStop(1, 'transparent');
+    ctx.fillStyle = sheenGrd;
+    ctx.fillRect(0, y - 1, canvas.width, 2);
+  }
+
+  particles.forEach((p, i) => {
+    p.y -= p.speedY;
+    p.x += p.speedX;
+    p.life -= p.decay;
+    p.twinkle += 0.05;
+    if (p.life <= 0 || p.y < -10) {
+      particles[i] = newSpark();
+      return;
+    }
+
+    const alpha = p.life * (0.7 + 0.3 * Math.sin(p.twinkle));
+
+    if (p.streak) {
+      // Streak — rising line
+      ctx.save();
+      ctx.globalAlpha = alpha * 0.8;
+      const grad = ctx.createLinearGradient(p.x, p.y, p.x - p.speedX * 3, p.y + p.len);
+      grad.addColorStop(0, p.color + '0.9)');
+      grad.addColorStop(1, p.color + '0)');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = p.r * 0.8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x - p.speedX * 3, p.y + p.len);
+      ctx.stroke();
+      ctx.restore();
+    } else {
+      // Glowing dot
+      const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 5);
+      glow.addColorStop(0, p.color + (alpha * 0.35) + ')');
+      glow.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * 5, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + alpha + ')';
+      ctx.fill();
+    }
+  });
+}
+
+// ── Embers (kept for reference, replaced by silver sparks) ────
+function makeEmbers() { makeSilverSparks(); }
+function newEmber() { return newSpark(); }
+function tickEmbers() { tickSilverSparks(); }
+
+// ── Animation loop ────────────────────────────────────────────
+function startLoop(tickFn) {
+  cancelAnimationFrame(animFrame);
+  function loop() {
+    tickFn();
+    animFrame = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ── Apply theme ───────────────────────────────────────────────
+function applyTheme(name) {
+  const t = themes[name];
+  currentTheme = name;
+
+  // Update switcher buttons
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === name);
+  });
+
+  // Banner
+  const banner = document.getElementById('theme-banner');
+  if (name === 'playoffs') {
+    banner.style.display = 'flex';
+    banner.style.background = t.bannerBg;
+    banner.style.borderColor = t.bannerBorder;
+    banner.style.color = t.bannerColor;
+    banner.innerHTML = `
+      <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <!-- Base / handles -->
+        <rect x="9" y="30" width="10" height="2.5" rx="1" fill="#8a95a3"/>
+        <rect x="7" y="32.5" width="14" height="2.5" rx="1.2" fill="#6b7a8d"/>
+        <!-- Stem -->
+        <rect x="12.5" y="18" width="3" height="12" rx="1" fill="#9aa5b4"/>
+        <!-- Side handles -->
+        <path d="M5 10 Q2 10 2 14 Q2 18 6 18 L8 18" stroke="#8a95a3" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M23 10 Q26 10 26 14 Q26 18 22 18 L20 18" stroke="#8a95a3" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <!-- Bowl body -->
+        <path d="M6 4 Q6 0 14 0 Q22 0 22 4 L20 18 Q18 22 14 22 Q10 22 8 18 Z" fill="url(#silverBowl)"/>
+        <!-- Highlight streak on bowl -->
+        <path d="M10 3 Q11 1 14 1 Q17 1 18 3" stroke="rgba(255,255,255,0.35)" stroke-width="1" fill="none" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="silverBowl" x1="6" y1="0" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#dde3ea"/>
+            <stop offset="35%" stop-color="#b0bcc8"/>
+            <stop offset="65%" stop-color="#8a95a3"/>
+            <stop offset="100%" stop-color="#c4cdd6"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span style="font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase">
+        Divisional Round &nbsp;·&nbsp; Win or go home
+      </span>
+    `;
+  } else {
+    banner.innerHTML = '';
+    banner.textContent = t.label;
+    banner.style.background = t.bannerBg;
+    banner.style.borderColor = t.bannerBorder;
+    banner.style.color = t.bannerColor;
+    banner.style.display = t.label ? 'flex' : 'none';
+  }
+
+  // Overlay
+  const overlay = document.getElementById('theme-overlay');
+  overlay.style.background = t.overlay;
+
+  // Week num + section
+  document.getElementById('week-num').textContent = t.weekNum;
+  document.getElementById('section-label').textContent = t.sectionLabel;
+
+  // Particles
+  t.particles();
+  startLoop(t.tick);
+}
+
+// ── Button listeners ──────────────────────────────────────────
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+});
+
+// Start with thanksgiving
+applyTheme('thanksgiving');
+</script>
+</body>
+</html>

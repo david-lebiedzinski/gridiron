@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme 1 — Stadium Night</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080a0f;
+    --surface: #0d1117;
+    --surface2: #131920;
+    --border: #1e2733;
+    --accent: #f5a623;
+    --accent2: #e05c2a;
+    --text: #e8eaf0;
+    --muted: #4a5568;
+    --green: #22c55e;
+    --red: #ef4444;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 0 16px 60px; }
+
+  /* Header */
+  .header {
+    padding: 24px 0 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .league-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .league-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .league-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .user-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #1a2a4a;
+    border: 2px solid #2a4a8a;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6aa3ff;
+  }
+
+  .week-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 72px);
+    letter-spacing: 4px;
+    line-height: 0.9;
+    color: var(--text);
+  }
+
+  .week-title span { color: var(--accent); }
+
+  .week-meta {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    padding: 16px 0;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .meta-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .meta-value.good { color: var(--green); }
+  .meta-divider { width: 1px; height: 36px; background: var(--border); }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    margin-bottom: -1px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    width: 58%;
+    transition: width 0.6s ease;
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Game cards */
+  .games { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+
+  .game-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+    animation: slideIn 0.4s ease forwards;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .game-card:nth-child(1) { animation-delay: 0.05s; }
+  .game-card:nth-child(2) { animation-delay: 0.10s; }
+  .game-card:nth-child(3) { animation-delay: 0.15s; }
+  .game-card:nth-child(4) { animation-delay: 0.20s; }
+  .game-card:nth-child(5) { animation-delay: 0.25s; }
+  .game-card:nth-child(6) { animation-delay: 0.30s; }
+
+  .game-card.picked-home { border-color: #2a4a8a; }
+  .game-card.picked-away { border-color: #2a4a8a; }
+  .game-card.correct { border-color: var(--green); }
+  .game-card.wrong { border-color: var(--red); }
+  .game-card.live { border-color: var(--accent); }
+
+  .game-main {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+  }
+
+  .team-side {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .team-side:hover { background: var(--surface2); }
+
+  .team-side.home { flex-direction: row-reverse; text-align: right; }
+
+  .team-side.selected {
+    background: rgba(42, 74, 138, 0.2);
+  }
+
+  .team-side.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    font-size: 10px;
+    color: #6aa3ff;
+    font-weight: bold;
+  }
+
+  .team-side.away.selected::after { right: 8px; }
+  .team-side.home.selected::after { left: 8px; }
+
+  .team-logo {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+
+  .team-info { flex: 1; min-width: 0; }
+
+  .team-abbr {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .team-name {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.5px;
+  }
+
+  .team-record {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* Center column */
+  .game-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    min-width: 110px;
+    gap: 4px;
+  }
+
+  .vs-text {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .game-time {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+  }
+
+  .game-spread {
+    font-size: 10px;
+    color: var(--accent);
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .lock-badge {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: 'Oswald', sans-serif;
+  }
+
+  .lock-badge.open { background: rgba(34, 197, 94, 0.1); color: var(--green); }
+  .lock-badge.locked { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+  .lock-badge.live {
+    background: rgba(245, 166, 35, 0.15);
+    color: var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* Live bar */
+  .live-bar {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+  }
+
+  .live-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  .live-situation {
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .live-down {
+    font-family: 'Oswald', sans-serif;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  /* Result bar */
+  .result-bar {
+    padding: 6px 20px;
+    font-size: 11px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .result-bar.correct { background: rgba(34, 197, 94, 0.08); color: var(--green); border-top: 1px solid rgba(34, 197, 94, 0.2); }
+  .result-bar.wrong { background: rgba(239, 68, 68, 0.08); color: var(--red); border-top: 1px solid rgba(239, 68, 68, 0.2); }
+
+  /* Leaderboard sidebar peek */
+  .sidebar-peek {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+
+  .sidebar-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .sidebar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-row:last-child { border-bottom: none; }
+
+  .rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--muted);
+    width: 24px;
+    text-align: center;
+  }
+
+  .rank.first { color: var(--accent); }
+
+  .player-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'Oswald', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .player-name {
+    flex: 1;
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .player-name.me { color: #6aa3ff; }
+
+  .player-pts {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="header-top">
+      <div class="league-badge">
+        <div class="league-icon">🏈</div>
+        <div class="league-name">The Boys League</div>
+      </div>
+      <div class="user-avatar">JD</div>
+    </div>
+
+    <div class="week-title">WEEK <span>7</span></div>
+
+    <div class="week-meta">
+      <div class="meta-item">
+        <div class="meta-label">Picked</div>
+        <div class="meta-value">7<span style="font-size:14px;color:var(--muted)">/13</span></div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <div class="meta-label">Points</div>
+        <div class="meta-value good">12</div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <div class="meta-label">Rank</div>
+        <div class="meta-value">#2</div>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <div class="meta-label">Streak</div>
+        <div class="meta-value good">🔥 4</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+
+  <!-- Thursday games -->
+  <div class="section-label">Thursday Night · Oct 17</div>
+  <div class="games">
+    <div class="game-card correct">
+      <div class="game-main">
+        <div class="team-side away selected">
+          <div class="team-logo">🦅</div>
+          <div class="team-info">
+            <div class="team-abbr">PHI</div>
+            <div class="team-name">Eagles</div>
+            <div class="team-record">5-1</div>
+          </div>
+        </div>
+        <div class="game-center">
+          <div class="vs-text">FINAL</div>
+          <div class="live-score" style="font-size:22px">28–14</div>
+          <div class="game-spread">PHI -4.5</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-logo">🐻</div>
+          <div class="team-info">
+            <div class="team-abbr">CHI</div>
+            <div class="team-name">Bears</div>
+            <div class="team-record">2-4</div>
+          </div>
+        </div>
+      </div>
+      <div class="result-bar correct">✓ Correct pick · +1 pt · Only you picked this right (+1 bonus)</div>
+    </div>
+  </div>
+
+  <!-- Sunday games -->
+  <div class="section-label">Sunday · Oct 20</div>
+  <div class="games">
+
+    <!-- Live game -->
+    <div class="game-card live">
+      <div class="game-main">
+        <div class="team-side away">
+          <div class="team-logo">👑</div>
+          <div class="team-info">
+            <div class="team-abbr">KC</div>
+            <div class="team-name">Chiefs</div>
+            <div class="team-record">5-0</div>
+          </div>
+        </div>
+        <div class="game-center">
+          <div class="lock-badge live">● Live Q3</div>
+          <div class="live-score">17–21</div>
+          <div class="game-spread">KC -3.5</div>
+        </div>
+        <div class="team-side home selected">
+          <div class="team-logo">🪶</div>
+          <div class="team-info">
+            <div class="team-abbr">BAL</div>
+            <div class="team-name">Ravens</div>
+            <div class="team-record">4-2</div>
+          </div>
+        </div>
+      </div>
+      <div class="live-bar">
+        <div class="live-situation">🏈 BAL Ball</div>
+        <div class="live-down">3rd & 4 · BAL 32</div>
+        <div class="live-situation" style="max-width:200px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lamar Jackson pass complete to M.Andrews</div>
+      </div>
+    </div>
+
+    <!-- Open pick -->
+    <div class="game-card">
+      <div class="game-main">
+        <div class="team-side away">
+          <div class="team-logo">🦬</div>
+          <div class="team-info">
+            <div class="team-abbr">BUF</div>
+            <div class="team-name">Bills</div>
+            <div class="team-record">5-1</div>
+          </div>
+        </div>
+        <div class="game-center">
+          <div class="lock-badge open">Open</div>
+          <div class="game-time">1:00 PM</div>
+          <div class="game-spread">BUF -6</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-logo">✈️</div>
+          <div class="team-info">
+            <div class="team-abbr">NYJ</div>
+            <div class="team-name">Jets</div>
+            <div class="team-record">2-4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wrong pick -->
+    <div class="game-card wrong">
+      <div class="game-main">
+        <div class="team-side away selected">
+          <div class="team-logo">🔴</div>
+          <div class="team-info">
+            <div class="team-abbr">SF</div>
+            <div class="team-name">49ers</div>
+            <div class="team-record">3-3</div>
+          </div>
+        </div>
+        <div class="game-center">
+          <div class="vs-text">FINAL</div>
+          <div class="live-score" style="font-size:22px">17–24</div>
+          <div class="game-spread">SF -2</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-logo">🦅</div>
+          <div class="team-info">
+            <div class="team-abbr">SEA</div>
+            <div class="team-name">Seahawks</div>
+            <div class="team-record">4-2</div>
+          </div>
+        </div>
+      </div>
+      <div class="result-bar wrong">✗ Wrong pick · 0 pts</div>
+    </div>
+
+    <!-- Unpicked open -->
+    <div class="game-card">
+      <div class="game-main">
+        <div class="team-side away">
+          <div class="team-logo">🐯</div>
+          <div class="team-info">
+            <div class="team-abbr">CIN</div>
+            <div class="team-name">Bengals</div>
+            <div class="team-record">3-3</div>
+          </div>
+        </div>
+        <div class="game-center">
+          <div class="lock-badge open">Open</div>
+          <div class="game-time">4:25 PM</div>
+          <div class="game-spread">CIN -1.5</div>
+        </div>
+        <div class="team-side home">
+          <div class="team-logo">⬛</div>
+          <div class="team-info">
+            <div class="team-abbr">PIT</div>
+            <div class="team-name">Steelers</div>
+            <div class="team-record">4-2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard peek -->
+  <div class="section-label">This Week</div>
+  <div class="sidebar-peek">
+    <div class="sidebar-title">Standings · Week 7</div>
+    <div class="sidebar-row">
+      <div class="rank first">1</div>
+      <div class="player-avatar" style="background:#1a3a1a;color:#4ade80">MK</div>
+      <div class="player-name">Marcus</div>
+      <div class="player-pts" style="color:var(--accent)">14</div>
+    </div>
+    <div class="sidebar-row">
+      <div class="rank" style="color:var(--text)">2</div>
+      <div class="player-avatar" style="background:#1a2a4a;color:#6aa3ff">JD</div>
+      <div class="player-name me">You</div>
+      <div class="player-pts" style="color:var(--text)">12</div>
+    </div>
+    <div class="sidebar-row">
+      <div class="rank">3</div>
+      <div class="player-avatar" style="background:#3a1a1a;color:#f87171">TR</div>
+      <div class="player-name">Taylor</div>
+      <div class="player-pts" style="color:var(--muted)">9</div>
+    </div>
+    <div class="sidebar-row">
+      <div class="rank">4</div>
+      <div class="player-avatar" style="background:#2a1a3a;color:#c084fc">AS</div>
+      <div class="player-name">Alex</div>
+      <div class="player-pts" style="color:var(--muted)">8</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

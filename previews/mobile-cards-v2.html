@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridiron — Mobile Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #080a0f;
+  --card:    #0d1117;
+  --card2:   #111820;
+  --border:  #1e2733;
+  --accent:  #f5a623;
+  --me:      #6aa3ff;
+  --text:    #e8eaf0;
+  --muted:   #4a5568;
+  --green:   #22c55e;
+  --red:     #ef4444;
+  --dim:     rgba(255,255,255,0.03);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── Nav ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,10,15,0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--accent);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid-btn {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.grid-btn:hover { color: var(--text); border-color: #4a5568; }
+
+.nav-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #1a2a4a;
+  border: 1.5px solid #2a4a8a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--me);
+}
+
+/* ── Week selector ── */
+.week-selector {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.week-selector::-webkit-scrollbar { display: none; }
+
+.week-pill {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.week-pill:hover { color: var(--text); border-color: #4a5568; }
+.week-pill.active { color: var(--accent); border-color: var(--accent); background: rgba(245,166,35,0.07); }
+.week-pill.playoff { border-color: #3a4a5a; color: #6b7a8d; }
+.week-pill.playoff.active { color: #c8cdd6; border-color: #c8cdd6; background: rgba(200,205,214,0.06); }
+
+/* ── Stats strip ── */
+.stats-strip {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ss-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-right: 1px solid var(--border);
+  gap: 1px;
+}
+.ss-item:last-child { border-right: none; }
+
+.ss-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.ss-val.accent { color: var(--accent); }
+.ss-val.me     { color: var(--me); }
+.ss-val.green  { color: var(--green); }
+
+.ss-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Cards container ── */
+.cards { padding: 12px 12px 80px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ── Game card ── */
+.game-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: fadeUp 0.3s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.game-card:nth-child(1)  { animation-delay: 0.03s; }
+.game-card:nth-child(2)  { animation-delay: 0.06s; }
+.game-card:nth-child(3)  { animation-delay: 0.09s; }
+.game-card:nth-child(4)  { animation-delay: 0.12s; }
+.game-card:nth-child(5)  { animation-delay: 0.15s; }
+.game-card:nth-child(6)  { animation-delay: 0.18s; }
+
+.game-card.correct { border-color: rgba(34,197,94,0.25); }
+.game-card.wrong   { border-color: rgba(239,68,68,0.15); }
+.game-card.live    { border-color: rgba(245,166,35,0.3); }
+
+/* ── Card header ── */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+
+.card-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.card-status {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.card-status.final { color: var(--muted); background: rgba(255,255,255,0.04); }
+.card-status.live  {
+  color: var(--accent);
+  background: rgba(245,166,35,0.1);
+  animation: blink 1.4s infinite;
+}
+.card-status.open  { color: var(--green); background: rgba(34,197,94,0.08); }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ── Teams row ── */
+.teams-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 16px 14px 12px;
+  gap: 8px;
+}
+
+.team-block { display: flex; flex-direction: column; gap: 2px; }
+.team-block.home { text-align: right; align-items: flex-end; }
+
+.team-abbr {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: var(--text);
+  transition: opacity 0.2s;
+}
+
+.team-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.team-record {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #2a3a4a;
+  font-weight: 300;
+}
+
+/* Dim losing team */
+.team-block.loser { opacity: 0.3; }
+
+/* Score / separator */
+.score-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.score-nums {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.score-sep {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+}
+
+/* ── Pick buttons ── */
+.pick-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 0 14px 14px;
+}
+
+.pick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--dim);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  position: relative;
+}
+
+.pick-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.pick-btn:active { transform: scale(0.97); }
+
+/* Selected states */
+.pick-btn.selected-correct {
+  background: rgba(34,197,94,0.12);
+  border-color: rgba(34,197,94,0.4);
+  color: #bbf7d0;
+}
+
+.pick-btn.selected-wrong {
+  background: rgba(239,68,68,0.07);
+  border-color: rgba(239,68,68,0.2);
+  color: #fca5a5;
+  opacity: 0.5;
+}
+
+.pick-btn.selected-pending {
+  background: rgba(106,163,255,0.1);
+  border-color: rgba(106,163,255,0.3);
+  color: var(--me);
+}
+
+.pick-btn.selected-live {
+  background: rgba(245,166,35,0.1);
+  border-color: rgba(245,166,35,0.3);
+  color: #fde68a;
+}
+
+/* Unselected when other is picked — fade back */
+.pick-btn.unselected {
+  opacity: 0.25;
+  filter: saturate(0.2);
+}
+
+.pick-btn-icon { font-size: 12px; }
+
+/* Locked — no pointer */
+.pick-btn.locked { cursor: default; pointer-events: none; }
+
+/* Bonus badge on button */
+.btn-bonus {
+  position: absolute;
+  top: -6px; right: -6px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+
+/* ── Your result strip ── */
+.result-strip {
+  padding: 6px 14px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+
+.result-strip.correct { color: var(--green); background: rgba(34,197,94,0.05); }
+.result-strip.wrong   { color: var(--red);   background: rgba(239,68,68,0.04); }
+.result-strip.live    { color: var(--accent); background: rgba(245,166,35,0.04); }
+
+/* ── Split pick bar ── */
+.pick-bar-wrap {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.pick-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.pbl-team {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pbl-team.picked { color: var(--text); }
+.pbl-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+/* The bar itself */
+.pick-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.bar-away {
+  height: 100%;
+  border-radius: 3px 0 0 3px;
+  transition: width 0.5s ease;
+}
+
+.bar-home {
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+  flex: 1;
+  transition: width 0.5s ease;
+}
+
+/* Bar colors by result */
+.bar-away.correct  { background: rgba(34,197,94,0.7); }
+.bar-away.wrong    { background: rgba(239,68,68,0.35); }
+.bar-away.pending  { background: rgba(106,163,255,0.5); }
+.bar-away.neutral  { background: rgba(100,120,150,0.4); }
+
+.bar-home.correct  { background: rgba(34,197,94,0.7); }
+.bar-home.wrong    { background: rgba(239,68,68,0.35); }
+.bar-home.pending  { background: rgba(106,163,255,0.5); }
+.bar-home.neutral  { background: rgba(100,120,150,0.25); }
+
+/* Initials under the bar */
+.pick-bar-initials {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.initial-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+.initial-dot.correct { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+.initial-dot.wrong   { background: rgba(239,68,68,0.1);  color: #f87171; border: 1px solid rgba(239,68,68,0.2); opacity: 0.5; }
+.initial-dot.pending { background: rgba(106,163,255,0.1); color: var(--me); border: 1px solid rgba(106,163,255,0.3); }
+.initial-dot.hidden  { background: var(--card2); color: #2a3a4a; border: 1px dashed var(--border); }
+.initial-dot.me      { border-width: 1.5px; }
+
+.initials-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+/* No picks yet */
+.no-picks-yet {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #2a3a4a;
+  text-transform: uppercase;
+  padding: 4px 0;
+  text-align: center;
+}
+
+/* ── Avatar dots — 28px with photo + ring ── */
+.avatar-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  cursor: default;
+}
+
+.avatar-dot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Result ring overrides */
+.avatar-dot.correct { border-color: #22c55e !important; box-shadow: 0 0 6px rgba(34,197,94,0.4); }
+.avatar-dot.wrong   { border-color: #ef4444 !important; box-shadow: none; opacity: 0.4; filter: saturate(0.3); }
+.avatar-dot.pending { box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+.avatar-dot.me      { border-width: 2.5px; }
+
+/* Separator between teams */
+.avatar-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 3px;
+}
+
+/* Hidden bar state */
+.bar-hidden-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bar-hidden-avatars {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.bar-hidden-count {
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Neutral hidden bar */
+.bar-neutral-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 3px;
+  background: rgba(100,120,150,0.15);
+}
+
+/* Live play strip */
+.live-strip {
+  padding: 6px 14px;
+  background: rgba(245,166,35,0.04);
+  border-top: 1px solid rgba(245,166,35,0.1);
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.live-strip .possession { color: var(--accent); font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 1px; }
+.live-strip .play { flex: 1; text-align: right; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">GRIDIRON</div>
+  <div class="nav-right">
+    <button class="grid-btn" onclick="alert('Grid view — opens the full season table')">
+      ⊞ Grid
+    </button>
+    <div class="nav-avatar">JD</div>
+  </div>
+</nav>
+
+<!-- Week selector -->
+<div class="week-selector">
+  <button class="week-pill">17</button>
+  <button class="week-pill">18</button>
+  <button class="week-pill playoff">WC</button>
+  <button class="week-pill playoff">DIV</button>
+  <button class="week-pill playoff">CONF</button>
+  <button class="week-pill playoff">SB</button>
+  <button class="week-pill active">7 ←</button>
+</div>
+
+<!-- Stats strip -->
+<div class="stats-strip">
+  <div class="ss-item">
+    <div class="ss-val me">187</div>
+    <div class="ss-label">Your pts</div>
+  </div>
+  <div class="ss-item">
+    <div class="ss-val">#2</div>
+    <div class="ss-label">Rank</div>
+  </div>
+  <div class="ss-item">
+    <div class="ss-val green">🔥 4</div>
+    <div class="ss-label">Streak</div>
+  </div>
+  <div class="ss-item">
+    <div class="ss-val accent">7/13</div>
+    <div class="ss-label">Picked</div>
+  </div>
+</div>
+
+<!-- Cards -->
+<div class="cards" id="cards"></div>
+
+<script>
+// Team colors for rings
+const TEAM_COLORS = {
+  PHI:'#004C54', KC:'#E31837', BAL:'#241773', BUF:'#00338D',
+  SF:'#AA0000',  DAL:'#003594', GB:'#203731',  NE:'#002244',
+  LAC:'#0080C6', MIA:'#008E97', MIN:'#4F2683', CHI:'#0B1C3E',
+  DET:'#0076B6', SEA:'#002244', CIN:'#FB4F14', PIT:'#101820',
+  LAR:'#003594', HOU:'#03202F', NYJ:'#125740', LV:'#A5ACAF',
+  DEN:'#FB4F14', TEN:'#4B92DB', NO:'#D3BC8D', ATL:'#A71930',
+  CAR:'#0085CA', WSH:'#5A1414', IND:'#002C5F', JAX:'#006778',
+  CLE:'#FF3C00', NYG:'#0B2265', ARI:'#97233F', TB:'#D50A0A',
+};
+
+// Simulate photo URLs — in production these come from Supabase Storage
+// Using placeholder avatar service with consistent seeds
+const PHOTO_BASE = 'https://api.dicebear.com/7.x/thumbs/svg?seed=';
+
+const PLAYERS = [
+  { id: 'marcus', init: 'MK', bgColor: '#0f2a0f', favoriteTeam: 'GB',  photo: PHOTO_BASE + 'marcus'  },
+  { id: 'you',    init: 'JD', bgColor: '#0f1a2e', favoriteTeam: 'PHI', photo: PHOTO_BASE + 'jordan2', isMe: true },
+  { id: 'alex',   init: 'AS', bgColor: '#1a0f2e', favoriteTeam: 'KC',  photo: PHOTO_BASE + 'alex'    },
+  { id: 'taylor', init: 'TR', bgColor: '#2e0f0f', favoriteTeam: 'BAL', photo: PHOTO_BASE + 'taylor'  },
+  { id: 'morgan', init: 'MO', bgColor: '#0f2a0f', favoriteTeam: 'SF',  photo: PHOTO_BASE + 'morgan'  },
+  { id: 'jordan', init: 'JR', bgColor: '#2a2a0f', favoriteTeam: 'BUF', photo: PHOTO_BASE + 'jordan'  },
+];
+
+function getTeamRingColor(player) {
+  return TEAM_COLORS[player.favoriteTeam] || '#4a5568';
+}
+
+function avatarHTML(player, dotClass, size = 28) {
+  const ringColor = dotClass === 'correct' ? '#22c55e'
+    : dotClass === 'wrong' ? '#ef4444'
+    : getTeamRingColor(player);
+
+  const initials = `<div style="width:100%;height:100%;background:${player.bgColor};display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:${Math.round(size*0.36)}px;font-weight:600;color:${ringColor};border-radius:50%">${player.init}</div>`;
+
+  // Try photo, fall back to initials
+  const inner = player.photo
+    ? `<img src="${player.photo}" alt="${player.init}" onerror="this.style.display='none';this.nextSibling.style.display='flex'" style="display:block">${initials.replace('display:flex','display:none')}`
+    : initials;
+
+  const nameLabel = player.isMe ? 'You' : player.id.charAt(0).toUpperCase() + player.id.slice(1);
+
+  return `<div class="avatar-dot ${dotClass}${player.isMe ? ' me' : ''}"
+    style="border-color:${ringColor};background:${player.bgColor};width:${size}px;height:${size}px"
+    title="${nameLabel}">${inner}</div>`;
+}
+
+const GAMES = [
+  {
+    id: 'g15',
+    time: 'Thu 8:15 PM',
+    away: { abbr: 'PHI', name: 'Eagles',  record: '9-3' },
+    home: { abbr: 'CHI', name: 'Bears',   record: '4-7' },
+    status: 'final', score: { away: 28, home: 14 },
+    winner: 'PHI',
+    picks:  ['PHI','PHI','CHI','PHI','PHI','PHI'],
+    correct: 'PHI',
+    myBonus: '+2',
+  },
+  {
+    id: 'g16',
+    time: 'Sun 1:00 PM',
+    away: { abbr: 'KC',  name: 'Chiefs',  record: '11-1' },
+    home: { abbr: 'BAL', name: 'Ravens',  record: '9-3' },
+    status: 'live', score: { away: 17, home: 21 },
+    liveInfo: { quarter: 'Q3', clock: '8:44', possession: 'BAL', down: '3rd & 4', play: 'Lamar Jackson rush 6yds — 1ST DOWN' },
+    winner: null,
+    picks:  ['BAL','KC','BAL','BAL','KC','BAL'],
+    correct: null,
+  },
+  {
+    id: 'g17',
+    time: 'Sun 1:00 PM',
+    away: { abbr: 'BUF', name: 'Bills',   record: '10-2' },
+    home: { abbr: 'NYJ', name: 'Jets',    record: '4-8' },
+    status: 'open', score: null,
+    winner: null,
+    picks:   [null, null, null, null, null, null],
+    othersHidden: true,
+    correct: null,
+  },
+  {
+    id: 'g18',
+    time: 'Sun 4:25 PM',
+    away: { abbr: 'SF',  name: '49ers',   record: '6-6' },
+    home: { abbr: 'SEA', name: 'Seahawks',record: '8-4' },
+    status: 'open', score: null,
+    winner: null,
+    picks:   [null, null, null, null, null, null],
+    othersHidden: true,
+    correct: null,
+  },
+  {
+    id: 'g19',
+    time: 'Sun 4:25 PM',
+    away: { abbr: 'CIN', name: 'Bengals', record: '6-6' },
+    home: { abbr: 'PIT', name: 'Steelers',record: '7-5' },
+    status: 'open', score: null,
+    winner: null,
+    picks:   [null, null, null, null, null, null],
+    othersHidden: true,
+    correct: null,
+  },
+  {
+    id: 'g20',
+    time: 'Sun 8:20 PM',
+    away: { abbr: 'DET', name: 'Lions',   record: '12-0' },
+    home: { abbr: 'GB',  name: 'Packers', record: '8-4' },
+    status: 'open', score: null,
+    winner: null,
+    picks:   [null, null, null, null, null, null],
+    othersHidden: true,
+    correct: null,
+  },
+];
+
+// My picks state — index 1 = me
+const myPicks = {};
+GAMES.forEach(g => { myPicks[g.id] = g.picks[1]; });
+
+// ── Render ────────────────────────────────────────────────────
+function render() {
+  const container = document.getElementById('cards');
+  container.innerHTML = GAMES.map(renderCard).join('');
+  attachListeners();
+}
+
+function renderCard(game) {
+  const myPick = myPicks[game.id];
+  const isLocked = game.status === 'final' || game.status === 'live';
+  const awayWon = game.winner === game.away.abbr;
+  const homeWon = game.winner === game.home.abbr;
+
+  // Card border class
+  let cardClass = 'game-card';
+  if (game.status === 'final') {
+    cardClass += myPick === game.correct ? ' correct' : myPick ? ' wrong' : '';
+  } else if (game.status === 'live') {
+    cardClass += ' live';
+  }
+
+  // Status badge
+  const statusHTML = game.status === 'final'
+    ? `<span class="card-status final">Final</span>`
+    : game.status === 'live'
+    ? `<span class="card-status live">● ${game.liveInfo.quarter} ${game.liveInfo.clock}</span>`
+    : `<span class="card-status open">Open</span>`;
+
+  // Score middle
+  const midHTML = game.score
+    ? `<div class="score-mid">
+        <div class="score-nums">${game.score.away}–${game.score.home}</div>
+       </div>`
+    : `<div class="score-mid"><div class="score-sep">@</div></div>`;
+
+  // Pick buttons
+  const awayBtnClass = getBtnClass(game, 'away', myPick, isLocked);
+  const homeBtnClass = getBtnClass(game, 'home', myPick, isLocked);
+
+  const myBonus = game.myBonus && myPick === game.correct
+    ? `<div class="btn-bonus">${game.myBonus}</div>` : '';
+
+  const awayIcon = getBtnIcon(game, 'away', myPick);
+  const homeIcon = getBtnIcon(game, 'home', myPick);
+
+  const pickButtonsHTML = `
+    <div class="pick-buttons">
+      <button class="pick-btn ${awayBtnClass}${isLocked ? ' locked' : ''}"
+              data-game="${game.id}" data-team="${game.away.abbr}"
+              data-away="${game.away.abbr}" data-home="${game.home.abbr}">
+        ${myPick === game.away.abbr ? myBonus : ''}
+        ${game.away.abbr}
+        ${awayIcon ? `<span class="pick-btn-icon">${awayIcon}</span>` : ''}
+      </button>
+      <button class="pick-btn ${homeBtnClass}${isLocked ? ' locked' : ''}"
+              data-game="${game.id}" data-team="${game.home.abbr}"
+              data-away="${game.away.abbr}" data-home="${game.home.abbr}">
+        ${myPick === game.home.abbr ? myBonus : ''}
+        ${game.home.abbr}
+        ${homeIcon ? `<span class="pick-btn-icon">${homeIcon}</span>` : ''}
+      </button>
+    </div>`;
+
+  // Result strip
+  let resultHTML = '';
+  if (game.status === 'final' && myPick) {
+    const correct = myPick === game.correct;
+    const pts = game.myBonus && correct ? game.myBonus : correct ? '+1pt' : '0pt';
+    resultHTML = `<div class="result-strip ${correct ? 'correct' : 'wrong'}">
+      <span>${correct ? '✓ Correct' : '✗ Wrong'}</span>
+      <span>${pts}</span>
+    </div>`;
+  } else if (game.status === 'live' && myPick) {
+    const leading = (myPick === game.away.abbr && game.score.away > game.score.home)
+                 || (myPick === game.home.abbr && game.score.home > game.score.away);
+    resultHTML = `<div class="result-strip live">
+      <span>Picked ${myPick}</span>
+      <span>${leading ? '↑ Leading' : '↓ Trailing'}</span>
+    </div>`;
+  }
+
+  // Live strip
+  let liveHTML = '';
+  if (game.status === 'live' && game.liveInfo) {
+    liveHTML = `<div class="live-strip">
+      <span class="possession">🏈 ${game.liveInfo.possession}</span>
+      <span>${game.liveInfo.down}</span>
+      <span class="play">${game.liveInfo.play}</span>
+    </div>`;
+  }
+
+  // Pick bar
+  const barHTML = renderPickBar(game, myPick);
+
+  return `
+    <div class="${cardClass}" data-game-id="${game.id}">
+      <div class="card-header">
+        <span class="card-time">${game.time}</span>
+        ${statusHTML}
+      </div>
+      <div class="teams-row">
+        <div class="team-block away ${game.winner && !awayWon ? 'loser' : ''}">
+          <div class="team-abbr">${game.away.abbr}</div>
+          <div class="team-name">${game.away.name}</div>
+          <div class="team-record">${game.away.record}</div>
+        </div>
+        ${midHTML}
+        <div class="team-block home ${game.winner && !homeWon ? 'loser' : ''}">
+          <div class="team-abbr">${game.home.abbr}</div>
+          <div class="team-name">${game.home.name}</div>
+          <div class="team-record">${game.home.record}</div>
+        </div>
+      </div>
+      ${pickButtonsHTML}
+      ${resultHTML}
+      ${liveHTML}
+      ${barHTML}
+    </div>`;
+}
+
+function getBtnClass(game, side, myPick, isLocked) {
+  const abbr = side === 'away' ? game.away.abbr : game.home.abbr;
+  const picked = myPick === abbr;
+  const otherPicked = myPick && myPick !== abbr;
+
+  if (!myPick) return '';
+  if (otherPicked) return 'unselected';
+
+  // My pick
+  if (game.status === 'final') {
+    return picked && myPick === game.correct ? 'selected-correct'
+         : picked ? 'selected-wrong' : '';
+  }
+  if (game.status === 'live') return picked ? 'selected-live' : '';
+  return picked ? 'selected-pending' : '';
+}
+
+function getBtnIcon(game, side, myPick) {
+  const abbr = side === 'away' ? game.away.abbr : game.home.abbr;
+  if (myPick !== abbr) return '';
+  if (game.status === 'final') return myPick === game.correct ? '✓' : '✗';
+  if (game.status === 'live') return '●';
+  return '?';
+}
+
+function getDotClass(game, pick) {
+  if (!pick) return 'empty';
+  if (game.status === 'final') return pick === game.correct ? 'correct' : 'wrong';
+  if (game.status === 'live')  return 'pending';
+  return 'pending';
+}
+
+function renderPickBar(game, myPick) {
+  const isLocked = game.status === 'live' || game.status === 'final';
+  const showOtherPicks = isLocked || !game.othersHidden;
+
+  // Resolve picks — always use latest myPicks for my slot
+  const resolvedPicks = game.picks.map((p, i) => i === 1 ? myPicks[game.id] : p);
+
+  if (!showOtherPicks) {
+    // ── HIDDEN STATE: only show my avatar + count ──
+    const myPick2    = myPicks[game.id];
+    const me         = PLAYERS[1];
+    const otherCount = game.picks.filter((p, i) => i !== 1 && p !== null).length;
+    const myDotCls   = getDotClass(game, myPick2);
+
+    const countMsg = otherCount > 0
+      ? `+${otherCount} picked`
+      : myPick2 ? 'Only you so far' : 'No picks yet';
+
+    return `
+      <div class="pick-bar-wrap">
+        <div class="pick-bar" style="margin-bottom:8px">
+          <div class="bar-neutral-fill"></div>
+        </div>
+        <div class="bar-hidden-wrap">
+          <div class="bar-hidden-avatars">
+            ${myPick2 ? avatarHTML(me, myDotCls) : ''}
+          </div>
+          <div class="bar-hidden-count">${countMsg}</div>
+        </div>
+      </div>`;
+  }
+
+  // ── VISIBLE STATE: full split bar + avatars ──
+  const awayCount   = resolvedPicks.filter(p => p === game.away.abbr).length;
+  const homeCount   = resolvedPicks.filter(p => p === game.home.abbr).length;
+  const totalPicked = awayCount + homeCount;
+
+  if (totalPicked === 0) {
+    return `<div class="pick-bar-wrap">
+      <div class="no-picks-yet">No picks yet — be first</div>
+    </div>`;
+  }
+
+  const awayPct = Math.round((awayCount / totalPicked) * 100);
+
+  const awayCorrect = game.winner === game.away.abbr;
+  const homeCorrect = game.winner === game.home.abbr;
+
+  const awayBarCls = game.status === 'final'
+    ? (awayCorrect ? 'correct' : 'wrong')
+    : game.status === 'live' ? 'pending' : 'neutral';
+
+  const homeBarCls = game.status === 'final'
+    ? (homeCorrect ? 'correct' : 'wrong')
+    : game.status === 'live' ? 'pending' : 'neutral';
+
+  // Build avatar groups
+  const awayAvatars = [];
+  const homeAvatars = [];
+
+  resolvedPicks.forEach((pick, i) => {
+    if (!pick) return; // skip unpicked
+    const p = PLAYERS[i];
+    const cls = getDotClass(game, pick);
+    const av = avatarHTML(p, cls);
+    if (pick === game.away.abbr) awayAvatars.push(av);
+    else homeAvatars.push(av);
+  });
+
+  const awayPickedCls = myPick === game.away.abbr ? 'picked' : '';
+  const homePickedCls = myPick === game.home.abbr ? 'picked' : '';
+  const sepHTML = awayAvatars.length && homeAvatars.length
+    ? '<div class="avatar-sep"></div>' : '';
+
+  return `
+    <div class="pick-bar-wrap">
+      <div class="pick-bar-labels">
+        <div class="pbl-team ${awayPickedCls}">
+          ${game.away.abbr}
+          <span class="pbl-count">${awayCount}</span>
+        </div>
+        <div class="pbl-team ${homePickedCls}" style="flex-direction:row-reverse">
+          ${game.home.abbr}
+          <span class="pbl-count">${homeCount}</span>
+        </div>
+      </div>
+      <div class="pick-bar">
+        <div class="bar-away ${awayBarCls}" style="width:${awayPct}%"></div>
+        <div class="bar-home ${homeBarCls}"></div>
+      </div>
+      <div class="pick-bar-initials" style="gap:3px">
+        ${awayAvatars.join('')}
+        ${sepHTML}
+        ${homeAvatars.join('')}
+      </div>
+    </div>`;
+}
+
+// ── Pick interaction ──────────────────────────────────────────
+function attachListeners() {
+  document.querySelectorAll('.pick-btn:not(.locked)').forEach(btn => {
+    btn.addEventListener('click', handlePick);
+  });
+}
+
+function handlePick(e) {
+  const btn    = e.currentTarget;
+  const gameId = btn.dataset.game;
+  const team   = btn.dataset.team;
+  const away   = btn.dataset.away;
+  const home   = btn.dataset.home;
+
+  const current = myPicks[gameId];
+
+  // Cycle: none → away → home → none
+  let next;
+  if (!current)           next = away;
+  else if (current===away) next = home;
+  else                     next = null;
+
+  // If tapping already-selected → clear; if tapping other → set
+  if (team !== next && current !== team) next = team;
+  else if (current === team) next = null;
+
+  myPicks[gameId] = next;
+
+  // Optimistic re-render
+  render();
+
+  // Simulate save
+  setTimeout(() => showToast(next ? `${next} picked` : 'Pick cleared', next ? 'success' : 'info'), 50);
+}
+
+// ── Toast ────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'info') {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+      background:#1a2233;border:1px solid #2a3a4a;color:#e8eaf0;
+      font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1.5px;
+      text-transform:uppercase;padding:10px 20px;border-radius:4px;z-index:500;
+      transition:transform 0.25s ease,opacity 0.25s;opacity:0;white-space:nowrap;
+      box-shadow:0 4px 20px rgba(0,0,0,0.4);`;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.borderColor = type === 'success' ? 'rgba(34,197,94,0.4)'
+    : type === 'error' ? 'rgba(239,68,68,0.4)' : 'rgba(245,166,35,0.3)';
+  toast.style.color = type === 'success' ? '#4ade80'
+    : type === 'error' ? '#f87171' : '#f5a623';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  toast.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(60px)';
+    toast.style.opacity = '0';
+  }, 1800);
+}
+
+// Week pills (cosmetic)
+document.querySelectorAll('.week-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.week-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+  });
+});
+
+render();
+</script>
+</body>
+</html>

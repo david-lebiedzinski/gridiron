@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridiron — Commissioner</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #080a0f;
+  --card:   #0d1117;
+  --card2:  #111820;
+  --border: #1e2733;
+  --accent: #f5a623;
+  --me:     #6aa3ff;
+  --text:   #e8eaf0;
+  --muted:  #4a5568;
+  --green:  #22c55e;
+  --red:    #ef4444;
+  --gold:   #f5c842;
+  --purple: #a855f7;
+}
+
+body {
+  background: #050709;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.04) 0%, transparent 60%), #050709;
+}
+
+.app-card {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 100vh;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px rgba(30,39,51,0.6), 0 32px 80px rgba(0,0,0,0.5);
+}
+
+/* ── Nav ── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,10,15,0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px; gap: 12px;
+}
+
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; color: var(--accent); }
+
+.nav-badge {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--purple); background: rgba(168,85,247,0.1);
+  border: 1px solid rgba(168,85,247,0.3);
+  padding: 3px 10px; border-radius: 3px;
+}
+
+.nav-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #1a2a4a; border: 2px solid #004C54;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  font-weight: 600; color: var(--me);
+}
+
+/* ── Page ── */
+.page { padding: 20px; max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding-bottom: 60px; }
+
+/* ── Section headers ── */
+.section-title {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+}
+
+.card-title {
+  font-family: 'Oswald', sans-serif; font-size: 13px;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+
+.card-body { padding: 16px; }
+
+/* ── Status pill ── */
+.status-pill {
+  font-family: 'Oswald', sans-serif; font-size: 8px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 3px;
+  display: flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+
+.status-pill.ok      { color: var(--green); background: rgba(34,197,94,0.1);   border: 1px solid rgba(34,197,94,0.2); }
+.status-pill.warn    { color: var(--accent); background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.2); }
+.status-pill.error   { color: var(--red);   background: rgba(239,68,68,0.1);   border: 1px solid rgba(239,68,68,0.2); }
+.status-pill.neutral { color: var(--muted); background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+.status-pill.active  { color: var(--purple); background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); }
+
+/* ── Action buttons ── */
+.btn {
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 8px 16px; border-radius: 4px; border: none;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent); color: #0a0600;
+  font-weight: 700;
+}
+.btn-primary:hover { background: #e09010; }
+
+.btn-ghost {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: #4a5568; }
+
+.btn-danger {
+  background: transparent; color: var(--red);
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.btn-danger:hover { background: rgba(239,68,68,0.08); }
+
+.btn-sm { padding: 5px 10px; font-size: 9px; }
+
+/* ── Health summary card ── */
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+
+.health-cell {
+  background: var(--card);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.health-icon { font-size: 20px; line-height: 1; }
+
+.health-label {
+  font-family: 'Oswald', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+}
+
+.health-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px; letter-spacing: 1px; line-height: 1;
+}
+
+.health-val.ok     { color: var(--green); }
+.health-val.warn   { color: var(--accent); }
+.health-val.error  { color: var(--red); }
+.health-val.purple { color: var(--purple); }
+
+.health-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--muted); font-weight: 300;
+}
+
+/* ── Picks status ── */
+.picks-status-list { display: flex; flex-direction: column; gap: 4px; }
+
+.pick-status-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 5px;
+  background: var(--card2); border: 1px solid var(--border);
+}
+
+.psr-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  font-weight: 700; flex-shrink: 0; border: 1.5px solid transparent;
+}
+
+.psr-name {
+  flex: 1; font-family: 'Oswald', sans-serif;
+  font-size: 13px; font-weight: 600;
+}
+
+.psr-count {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--muted); font-weight: 300;
+}
+
+.psr-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+
+.psr-dot.done    { background: var(--green); }
+.psr-dot.partial { background: var(--accent); }
+.psr-dot.none    { background: var(--red); }
+
+/* Progress bar for picks */
+.picks-progress {
+  height: 4px; border-radius: 2px; background: var(--border);
+  overflow: hidden; width: 60px; flex-shrink: 0;
+}
+
+.picks-progress-fill {
+  height: 100%; border-radius: 2px; transition: width 0.4s;
+}
+
+.picks-progress-fill.done    { background: var(--green); }
+.picks-progress-fill.partial { background: var(--accent); }
+.picks-progress-fill.none    { background: var(--red); }
+
+/* ── Sync section ── */
+.sync-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sync-row:last-child { border-bottom: none; }
+
+.sync-info { flex: 1; min-width: 0; }
+.sync-name {
+  font-family: 'Oswald', sans-serif; font-size: 13px;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+.sync-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--muted); font-weight: 300; margin-top: 2px;
+}
+
+/* Spinning sync icon */
+@keyframes spin { to { transform: rotate(360deg); } }
+.syncing { animation: spin 1s linear infinite; display: inline-block; }
+
+/* ── Members ── */
+.member-list { display: flex; flex-direction: column; gap: 4px; }
+
+.member-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 5px;
+  background: var(--card2); border: 1px solid var(--border);
+}
+
+.member-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  font-weight: 700; flex-shrink: 0; border: 1.5px solid transparent;
+}
+
+.member-info { flex: 1; min-width: 0; }
+.member-name { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 600; }
+.member-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); font-weight: 300; margin-top: 1px; }
+
+.member-actions { display: flex; gap: 6px; }
+
+/* ── Invite code ── */
+.invite-code-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 16px;
+}
+
+.invite-code-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: 6px; color: var(--text);
+  flex: 1;
+}
+
+/* ── Settings form ── */
+.settings-form { display: flex; flex-direction: column; gap: 0; }
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+
+.setting-info { flex: 1; min-width: 0; }
+.setting-label {
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+.setting-desc {
+  font-family: 'DM Sans', sans-serif; font-size: 11px;
+  color: var(--muted); margin-top: 2px;
+}
+
+/* Number input */
+.setting-input {
+  width: 72px; text-align: center;
+  background: var(--card2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 4px; padding: 6px 8px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+  letter-spacing: 1px; outline: none;
+}
+.setting-input:focus { border-color: var(--accent); }
+
+/* Toggle switch */
+.toggle-wrap { display: flex; align-items: center; gap: 8px; }
+.toggle {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: var(--border); position: relative;
+  cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  border: none; outline: none;
+}
+.toggle.on { background: var(--green); }
+.toggle::after {
+  content: '';
+  position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; transition: left 0.2s;
+}
+.toggle.on::after { left: 21px; }
+.toggle-label { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 1px; color: var(--muted); }
+
+/* Playoff multiplier grid */
+.multiplier-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; width: 200px;
+}
+
+.mult-cell { display: flex; flex-direction: column; gap: 3px; }
+.mult-label { font-family: 'Oswald', sans-serif; font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+
+/* Locked overlay */
+.settings-locked-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: rgba(168,85,247,0.06);
+  border-bottom: 1px solid rgba(168,85,247,0.15);
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--purple);
+}
+
+/* ── Season lifecycle ── */
+.lifecycle-steps {
+  display: flex; gap: 0; position: relative;
+}
+
+.lifecycle-step {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 6px; padding: 12px 4px;
+  position: relative;
+}
+
+.lifecycle-step::after {
+  content: '';
+  position: absolute; top: 20px; right: -50%;
+  width: 100%; height: 2px; background: var(--border); z-index: 0;
+}
+.lifecycle-step:last-child::after { display: none; }
+
+.lifecycle-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; position: relative; z-index: 1;
+  border: 2px solid var(--border); background: var(--card2);
+}
+
+.lifecycle-dot.done    { border-color: var(--green); background: rgba(34,197,94,0.1); }
+.lifecycle-dot.current { border-color: var(--accent); background: rgba(245,166,35,0.1); animation: pulse 2s infinite; }
+.lifecycle-dot.future  { border-color: var(--border); opacity: 0.4; }
+
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,0.4)} 50%{box-shadow:0 0 0 6px rgba(245,166,35,0)} }
+
+.lifecycle-label {
+  font-family: 'Oswald', sans-serif; font-size: 8px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  text-align: center; color: var(--muted);
+}
+
+.lifecycle-label.current { color: var(--accent); }
+.lifecycle-label.done    { color: var(--green); }
+
+/* Danger zone */
+.danger-zone {
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 8px; overflow: hidden;
+}
+
+.danger-header {
+  padding: 10px 16px;
+  background: rgba(239,68,68,0.06);
+  border-bottom: 1px solid rgba(239,68,68,0.15);
+  font-family: 'Oswald', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--red);
+}
+
+.danger-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 12px 16px;
+  border-bottom: 1px solid rgba(239,68,68,0.08);
+}
+.danger-row:last-child { border-bottom: none; }
+
+.danger-info .danger-label { font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 600; }
+.danger-info .danger-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Confirm modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 500; display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; max-width: 360px; width: 100%;
+  animation: fadeUp 0.25s ease;
+}
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+.modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; margin-bottom: 8px; }
+.modal-body  { font-size: 13px; color: #8a9ab0; line-height: 1.5; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: #1a2233; border: 1px solid #2a3a4a; color: var(--text);
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 10px 20px; border-radius: 4px;
+  z-index: 600; transition: transform 0.25s, opacity 0.25s; opacity: 0;
+  white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.success { border-color: rgba(34,197,94,0.4); color: #4ade80; }
+.toast.warn    { border-color: rgba(245,166,35,0.4); color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+<div class="app-card">
+
+<!-- Nav -->
+<nav class="nav">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="nav-logo">GRIDIRON</div>
+    <div class="nav-badge">⚙ Commissioner</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-family:'Oswald',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px">The Boys</span>
+    <div class="nav-avatar">JD</div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ── HEALTH SUMMARY ── -->
+  <div>
+    <div class="section-title">League health</div>
+    <div class="card" style="overflow:hidden">
+      <div class="health-grid">
+        <div class="health-cell">
+          <div class="health-icon">📋</div>
+          <div class="health-label">Picks this week</div>
+          <div class="health-val warn">7/10</div>
+          <div class="health-sub">3 haven't picked</div>
+        </div>
+        <div class="health-cell">
+          <div class="health-icon">🔄</div>
+          <div class="health-label">Last sync</div>
+          <div class="health-val ok">12m ago</div>
+          <div class="health-sub">Wk 7 · 13 games</div>
+        </div>
+        <div class="health-cell">
+          <div class="health-icon">🏈</div>
+          <div class="health-label">Season status</div>
+          <div class="health-val purple">Active</div>
+          <div class="health-sub">Wk 7 of 18</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PICKS STATUS ── -->
+  <div>
+    <div class="section-title">Week 7 picks status</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Who's picked</div>
+        <div class="status-pill warn">⚠ 3 missing</div>
+      </div>
+      <div class="card-body" style="padding:12px">
+        <div class="picks-status-list">
+
+          <div class="pick-status-row">
+            <div class="psr-avatar" style="background:#1a3a1a;border-color:#4ade80;color:#4ade80">MK</div>
+            <div class="psr-name">Marcus</div>
+            <div class="psr-count">13/13</div>
+            <div class="picks-progress"><div class="picks-progress-fill done" style="width:100%"></div></div>
+            <div class="psr-dot done"></div>
+          </div>
+
+          <div class="pick-status-row" style="border-color:rgba(106,163,255,0.2);background:rgba(106,163,255,0.04)">
+            <div class="psr-avatar" style="background:#1a2a4a;border-color:#6aa3ff;color:#6aa3ff">JD</div>
+            <div class="psr-name" style="color:var(--me)">You</div>
+            <div class="psr-count">7/13</div>
+            <div class="picks-progress"><div class="picks-progress-fill partial" style="width:54%"></div></div>
+            <div class="psr-dot partial"></div>
+          </div>
+
+          <div class="pick-status-row">
+            <div class="psr-avatar" style="background:#2a1a3a;border-color:#c084fc;color:#c084fc">AS</div>
+            <div class="psr-name">Alex</div>
+            <div class="psr-count">13/13</div>
+            <div class="picks-progress"><div class="picks-progress-fill done" style="width:100%"></div></div>
+            <div class="psr-dot done"></div>
+          </div>
+
+          <div class="pick-status-row">
+            <div class="psr-avatar" style="background:#3a1a1a;border-color:#f87171;color:#f87171">TR</div>
+            <div class="psr-name">Taylor</div>
+            <div class="psr-count">9/13</div>
+            <div class="picks-progress"><div class="picks-progress-fill partial" style="width:69%"></div></div>
+            <div class="psr-dot partial"></div>
+          </div>
+
+          <div class="pick-status-row">
+            <div class="psr-avatar" style="background:#1a2a1a;border-color:#86efac;color:#86efac">MO</div>
+            <div class="psr-name">Morgan</div>
+            <div class="psr-count">0/13</div>
+            <div class="picks-progress"><div class="picks-progress-fill none" style="width:0%"></div></div>
+            <div class="psr-dot none"></div>
+          </div>
+
+          <div class="pick-status-row">
+            <div class="psr-avatar" style="background:#2a2a1a;border-color:#fde68a;color:#fde68a">JR</div>
+            <div class="psr-name">Jordan</div>
+            <div class="psr-count">0/13</div>
+            <div class="picks-progress"><div class="picks-progress-fill none" style="width:0%"></div></div>
+            <div class="psr-dot none"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ESPN SYNC ── -->
+  <div>
+    <div class="section-title">ESPN sync</div>
+    <div class="card">
+      <div class="sync-row">
+        <div class="sync-info">
+          <div class="sync-name">Week 7 · Regular Season</div>
+          <div class="sync-sub">Last synced 12 min ago · 13 games · Wk 7 of 18</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="status-pill ok">✓ Synced</div>
+          <button class="btn btn-ghost btn-sm" onclick="simulateSync(this)">↻ Sync now</button>
+        </div>
+      </div>
+      <div class="sync-row">
+        <div class="sync-info">
+          <div class="sync-name">Week 8 · Regular Season</div>
+          <div class="sync-sub">Not yet synced · Games available Thu Oct 24</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="status-pill neutral">Not synced</div>
+          <button class="btn btn-ghost btn-sm" onclick="simulateSync(this)">↻ Sync</button>
+        </div>
+      </div>
+      <div class="sync-row">
+        <div class="sync-info">
+          <div class="sync-name">Live score polling</div>
+          <div class="sync-sub">Auto-runs every 60s on game days via Edge Function</div>
+        </div>
+        <div class="status-pill ok">● Running</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MEMBERS ── -->
+  <div>
+    <div class="section-title">Members</div>
+
+    <!-- Invite code -->
+    <div class="card" style="margin-bottom:8px">
+      <div class="card-header">
+        <div class="card-title">Invite code</div>
+        <div class="status-pill active">Active</div>
+      </div>
+      <div class="card-body">
+        <div class="invite-code-wrap">
+          <div class="invite-code-val" id="invite-code">GRDN-X4K2</div>
+          <button class="btn btn-ghost btn-sm" onclick="copyCode()">Copy</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('regen')">Regenerate</button>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;font-weight:300">
+          Share this code with anyone you want to invite. Regenerate to invalidate the old code.
+        </div>
+      </div>
+    </div>
+
+    <!-- Member list -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">10 members</div>
+        <button class="btn btn-ghost btn-sm">+ Invite link</button>
+      </div>
+      <div class="card-body" style="padding:12px">
+        <div class="member-list">
+
+          <div class="member-row" style="border-color:rgba(168,85,247,0.2);background:rgba(168,85,247,0.04)">
+            <div class="member-avatar" style="background:#1a2a4a;border-color:#6aa3ff;color:#6aa3ff">JD</div>
+            <div class="member-info">
+              <div class="member-name" style="color:var(--me)">You (Commissioner)</div>
+              <div class="member-meta">@jordan · PHI fan · joined Sep 2024</div>
+            </div>
+            <div class="status-pill active">Commissioner</div>
+          </div>
+
+          <div class="member-row">
+            <div class="member-avatar" style="background:#1a3a1a;border-color:#4ade80;color:#4ade80">MK</div>
+            <div class="member-info">
+              <div class="member-name">Marcus</div>
+              <div class="member-meta">@marcus · GB fan · joined Sep 2024</div>
+            </div>
+            <div class="member-actions">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('transfer', 'Marcus')">Make commissioner</button>
+              <button class="btn btn-danger btn-sm" onclick="openModal('remove', 'Marcus')">Remove</button>
+            </div>
+          </div>
+
+          <div class="member-row">
+            <div class="member-avatar" style="background:#2a1a3a;border-color:#c084fc;color:#c084fc">AS</div>
+            <div class="member-info">
+              <div class="member-name">Alex</div>
+              <div class="member-meta">@alex · KC fan · joined Sep 2024</div>
+            </div>
+            <div class="member-actions">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('transfer', 'Alex')">Make commissioner</button>
+              <button class="btn btn-danger btn-sm" onclick="openModal('remove', 'Alex')">Remove</button>
+            </div>
+          </div>
+
+          <div class="member-row">
+            <div class="member-avatar" style="background:#3a1a1a;border-color:#f87171;color:#f87171">TR</div>
+            <div class="member-info">
+              <div class="member-name">Taylor</div>
+              <div class="member-meta">@taylor · BAL fan · joined Sep 2024</div>
+            </div>
+            <div class="member-actions">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('transfer', 'Taylor')">Make commissioner</button>
+              <button class="btn btn-danger btn-sm" onclick="openModal('remove', 'Taylor')">Remove</button>
+            </div>
+          </div>
+
+          <div class="member-row">
+            <div class="member-avatar" style="background:#1a2a1a;border-color:#86efac;color:#86efac">MO</div>
+            <div class="member-info">
+              <div class="member-name">Morgan</div>
+              <div class="member-meta">@morgan · SF fan · joined Sep 2024</div>
+            </div>
+            <div class="member-actions">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('transfer', 'Morgan')">Make commissioner</button>
+              <button class="btn btn-danger btn-sm" onclick="openModal('remove', 'Morgan')">Remove</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SEASON SETTINGS ── -->
+  <div>
+    <div class="section-title">Season settings</div>
+    <div class="card">
+      <div class="settings-locked-banner">
+        🔒 Season is active — settings are locked
+      </div>
+
+      <!-- Scoring -->
+      <div class="card-header" style="background:rgba(0,0,0,0.15)">
+        <div class="card-title">Scoring</div>
+        <div class="status-pill neutral">2024 Season</div>
+      </div>
+      <div class="settings-form">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Base correct pick</div>
+            <div class="setting-desc">Points for a correct pick in regular season</div>
+          </div>
+          <input type="number" class="setting-input" value="1" min="1" max="10" disabled>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Upset multiplier</div>
+            <div class="setting-desc">Multiplied by base for correct upset pick</div>
+          </div>
+          <input type="number" class="setting-input" value="2" min="1" max="10" disabled>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Sole correct bonus</div>
+            <div class="setting-desc">Bonus points when only you got it right</div>
+          </div>
+          <input type="number" class="setting-input" value="1" min="0" max="10" disabled>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Weekly bonus</div>
+            <div class="setting-desc">Awarded to week's top scorer (split on ties)</div>
+          </div>
+          <input type="number" class="setting-input" value="2" min="0" max="20" disabled>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Weekly bonus scales in playoffs</div>
+            <div class="setting-desc">Multiplies weekly bonus by round multiplier</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="toggle on" disabled></button>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Playoff multipliers -->
+      <div class="card-header" style="background:rgba(0,0,0,0.15);border-top:1px solid var(--border)">
+        <div class="card-title">Playoff multipliers</div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Round multipliers</div>
+          <div class="setting-desc">Applied to base pts, upset pts, and sole bonus</div>
+        </div>
+        <div class="multiplier-grid">
+          <div class="mult-cell">
+            <div class="mult-label">Wild Card</div>
+            <input type="number" class="setting-input" style="width:60px" value="2" disabled>
+          </div>
+          <div class="mult-cell">
+            <div class="mult-label">Divisional</div>
+            <input type="number" class="setting-input" style="width:60px" value="3" disabled>
+          </div>
+          <div class="mult-cell">
+            <div class="mult-label">Conf Champ</div>
+            <input type="number" class="setting-input" style="width:60px" value="4" disabled>
+          </div>
+          <div class="mult-cell">
+            <div class="mult-label">Super Bowl</div>
+            <input type="number" class="setting-input" style="width:60px" value="5" disabled>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visibility -->
+      <div class="card-header" style="background:rgba(0,0,0,0.15);border-top:1px solid var(--border)">
+        <div class="card-title">Visibility</div>
+      </div>
+      <div class="settings-form">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Picks visible before kickoff</div>
+            <div class="setting-desc">Show other players' picks before the game starts</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="toggle" id="toggle-visibility" onclick="toggleSetting(this)"></button>
+            <span class="toggle-label" id="label-visibility">Off</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Analytics public by default</div>
+            <div class="setting-desc">Members can view each other's analytics</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="toggle on" id="toggle-analytics" onclick="toggleSetting(this)"></button>
+            <span class="toggle-label" id="label-analytics">On</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiebreakers -->
+      <div class="card-header" style="background:rgba(0,0,0,0.15);border-top:1px solid var(--border)">
+        <div class="card-title">Tiebreakers</div>
+      </div>
+      <div class="settings-form">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Super Bowl score prediction</div>
+            <div class="setting-desc">First tiebreaker — closest to actual combined score</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="toggle on" disabled></button>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Most playoff points</div>
+            <div class="setting-desc">Second tiebreaker if Super Bowl prediction is equal</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="toggle on" disabled></button>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SEASON LIFECYCLE ── -->
+  <div>
+    <div class="section-title">Season lifecycle</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="lifecycle-steps" style="margin-bottom:20px">
+          <div class="lifecycle-step">
+            <div class="lifecycle-dot done">✓</div>
+            <div class="lifecycle-label done">Created</div>
+          </div>
+          <div class="lifecycle-step">
+            <div class="lifecycle-dot done">✓</div>
+            <div class="lifecycle-label done">Configured</div>
+          </div>
+          <div class="lifecycle-step">
+            <div class="lifecycle-dot current">●</div>
+            <div class="lifecycle-label current">Active</div>
+          </div>
+          <div class="lifecycle-step">
+            <div class="lifecycle-dot future">○</div>
+            <div class="lifecycle-label">Playoffs</div>
+          </div>
+          <div class="lifecycle-step">
+            <div class="lifecycle-dot future">○</div>
+            <div class="lifecycle-label">Archived</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="openModal('archive')">Archive season</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DANGER ZONE ── -->
+  <div>
+    <div class="section-title">Danger zone</div>
+    <div class="danger-zone">
+      <div class="danger-header">⚠ Irreversible actions</div>
+      <div class="danger-row">
+        <div class="danger-info">
+          <div class="danger-label">Transfer commissioner</div>
+          <div class="danger-desc">Hand commissioner role to another member. You become a regular member.</div>
+        </div>
+        <button class="btn btn-danger" onclick="openModal('transfer-self')">Transfer role</button>
+      </div>
+      <div class="danger-row">
+        <div class="danger-info">
+          <div class="danger-label">Regenerate invite code</div>
+          <div class="danger-desc">Invalidates the current code immediately. Anyone with the old code can no longer join.</div>
+        </div>
+        <button class="btn btn-danger" onclick="openModal('regen')">Regenerate</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+</div><!-- /app-card -->
+</div><!-- /app-shell -->
+
+<!-- Confirm modal -->
+<div class="modal-overlay" id="modal" onclick="closeModalOnBg(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Confirm</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="modal-confirm" onclick="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Toggle settings ───────────────────────────────────────────
+function toggleSetting(btn) {
+  btn.classList.toggle('on');
+  const isOn = btn.classList.contains('on');
+  const labelId = 'label-' + btn.id.replace('toggle-', '');
+  const label = document.getElementById(labelId);
+  if (label) label.textContent = isOn ? 'On' : 'Off';
+  showToast(isOn ? 'Setting enabled' : 'Setting disabled', 'success');
+}
+
+// ── Sync simulation ───────────────────────────────────────────
+function simulateSync(btn) {
+  const original = btn.textContent;
+  btn.textContent = '↻ Syncing...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = '✓ Synced';
+    btn.disabled = false;
+    showToast('Week synced successfully', 'success');
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  }, 1800);
+}
+
+// ── Copy invite code ──────────────────────────────────────────
+function copyCode() {
+  const code = document.getElementById('invite-code').textContent;
+  navigator.clipboard?.writeText(code).catch(() => {});
+  showToast('Invite code copied', 'success');
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+let pendingAction = null;
+
+const MODALS = {
+  regen: {
+    title: 'Regenerate invite code?',
+    body: 'The current code <strong>GRDN-X4K2</strong> will stop working immediately. Anyone with it can no longer join.',
+    confirmLabel: 'Regenerate',
+    action: () => showToast('New invite code generated', 'success'),
+  },
+  archive: {
+    title: 'Archive this season?',
+    body: 'The 2024 season will be marked as complete. Picks and scores are preserved. A new season can be started anytime.',
+    confirmLabel: 'Archive season',
+    action: () => showToast('Season archived', 'success'),
+  },
+  'transfer-self': {
+    title: 'Transfer commissioner role?',
+    body: 'Choose a member to become the new commissioner. You will become a regular member and lose access to this dashboard.',
+    confirmLabel: 'Transfer',
+    action: () => showToast('Commissioner role transferred', 'success'),
+  },
+};
+
+function openModal(type, name) {
+  let config = MODALS[type];
+  if (!config && type === 'remove') {
+    config = {
+      title: `Remove ${name}?`,
+      body: `${name} will be removed from The Boys league. Their picks and history are preserved but they will lose access.`,
+      confirmLabel: 'Remove member',
+      action: () => showToast(`${name} removed`, 'warn'),
+    };
+  }
+  if (!config && type === 'transfer') {
+    config = {
+      title: `Make ${name} commissioner?`,
+      body: `${name} will become the new commissioner of The Boys. You will remain a member.`,
+      confirmLabel: 'Transfer role',
+      action: () => showToast(`${name} is now commissioner`, 'success'),
+    };
+  }
+  if (!config) return;
+
+  pendingAction = config.action;
+  document.getElementById('modal-title').textContent = config.title;
+  document.getElementById('modal-body').innerHTML = config.body;
+  document.getElementById('modal-confirm').textContent = config.confirmLabel;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  pendingAction = null;
+}
+
+function closeModalOnBg(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+function confirmAction() {
+  closeModal();
+  if (pendingAction) pendingAction();
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

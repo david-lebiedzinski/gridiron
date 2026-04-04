@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picks Grid — Final</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #080a0f;
+  color: #e8eaf0;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Page header ── */
+.page-header {
+  padding: 20px 16px 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 3px;
+  line-height: 1;
+}
+
+.page-sub {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #4a5568;
+  margin-top: 4px;
+}
+
+.week-filter {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.wf-btn {
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  border: 1px solid #1e2733;
+  background: transparent;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.wf-btn:hover { color: #e8eaf0; border-color: #4a5568; }
+.wf-btn.active { color: #f5a623; border-color: #f5a623; background: rgba(245,166,35,0.06); }
+.wf-btn.playoff { color: #c8cdd6; border-color: #6b7a8d; }
+.wf-btn.playoff.active { color: #c8cdd6; border-color: #c8cdd6; background: rgba(200,205,214,0.06); }
+
+/* ── Table wrap ── */
+.table-outer {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid #1e2733;
+}
+
+/* ── Main table ── */
+.picks-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: 12px;
+}
+
+/* ── Sticky left columns ── */
+.picks-table .s0,
+.picks-table .s1,
+.picks-table .s2,
+.picks-table .s3 {
+  position: sticky;
+  background: #080a0f;
+  z-index: 10;
+}
+
+.picks-table .s0 { left: 0;     min-width: 38px; max-width: 38px; }
+.picks-table .s1 { left: 38px;  min-width: 72px; max-width: 72px; }
+.picks-table .s2 { left: 110px; min-width: 88px; max-width: 88px; }
+.picks-table .s3 { left: 198px; min-width: 70px; max-width: 70px; box-shadow: 4px 0 10px rgba(0,0,0,0.6); }
+
+/* ── Standing header rows ── */
+.thead-names th,
+.thead-rank th,
+.thead-pts th {
+  padding: 0;
+  border-bottom: none;
+}
+
+/* Name row */
+.thead-names th {
+  padding: 14px 4px 2px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-align: center;
+  white-space: nowrap;
+  color: #8a9ab0;
+}
+
+.thead-names th.me { color: #6aa3ff; }
+.thead-names th.leader { color: #f5a623; }
+
+.thead-names th.col-label {
+  text-align: left;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #2a3a4a;
+  text-transform: uppercase;
+  padding-left: 10px;
+}
+
+/* Rank row */
+.thead-rank th {
+  padding: 0 4px 2px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  text-align: center;
+  color: #2a3a4a;
+  letter-spacing: 1px;
+}
+
+.thead-rank th.me { color: #3a5a8a; }
+.thead-rank th.leader { color: #7a5a10; }
+
+/* Points row */
+.thead-pts th {
+  padding: 0 4px 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 1px;
+  border-bottom: 2px solid #1e2733;
+}
+
+.thead-pts th.me { color: #e8eaf0; }
+.thead-pts th.leader { color: #f5a623; }
+.thead-pts th.other { color: #4a5568; }
+
+.thead-pts .pts-sub {
+  font-family: 'Oswald', sans-serif;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #2a3a4a;
+  display: block;
+  font-weight: 400;
+  margin-top: -2px;
+}
+
+/* ── Column labels row ── */
+.col-labels th {
+  padding: 8px 10px 6px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #2a3a4a;
+  text-align: left;
+  border-bottom: 1px solid #1e2733;
+  white-space: nowrap;
+}
+
+/* ── Week group rows ── */
+.week-group td {
+  padding: 7px 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #2a3a4a;
+  background: #0a0c12;
+  border-top: 1px solid #1e2733;
+  border-bottom: 1px solid #1e2733;
+  white-space: nowrap;
+}
+
+.week-group.playoff td {
+  color: #4a5568;
+  background: #0a0c10;
+}
+
+.week-group.superbowl td {
+  color: #7a5a10;
+  background: #0c0a06;
+}
+
+/* ── Game rows ── */
+.game-row {
+  border-bottom: 1px solid rgba(30,39,51,0.5);
+  transition: background 0.1s;
+}
+
+.game-row:hover { background: rgba(255,255,255,0.015); }
+
+/* Playoff accent */
+.game-row.playoff {
+  border-left: 2px solid #3a4a5a;
+}
+
+.game-row.superbowl {
+  border-left: 2px solid #7a5a10;
+}
+
+.game-row td { padding: 5px 4px; vertical-align: middle; }
+.game-row td.s0,
+.game-row td.s1,
+.game-row td.s2,
+.game-row td.s3 { padding: 5px 8px; }
+
+/* Week cell */
+.wk-cell {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3a4a5a;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.wk-cell.playoff { color: #6b7a8d; }
+.wk-cell.superbowl { color: #7a5a10; }
+
+/* Time cell */
+.time-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #3a4a5a;
+  font-weight: 300;
+  white-space: nowrap;
+}
+
+/* Matchup cell */
+.matchup-cell {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.matchup-cell .away { color: #c8d0da; }
+.matchup-cell .sep  { color: #2a3a4a; margin: 0 2px; font-size: 9px; }
+.matchup-cell .home { color: #6a7a8a; }
+
+/* Score cell */
+.score-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #8a9ab0;
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 300;
+}
+
+.score-cell .game-status {
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: block;
+  text-align: right;
+}
+
+.score-cell .game-status.final  { color: #2a3a4a; }
+.score-cell .game-status.live   { color: #f5a623; animation: blink 1.4s infinite; }
+.score-cell .game-status.open   { color: #22c55e; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Pick cell */
+.pick-cell { text-align: center; padding: 4px 3px !important; }
+
+/* ── THE CHIP ── */
+.chip {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 52px;
+  height: 28px;
+  border-radius: 3px;
+  padding: 0 6px;
+  position: relative;
+  cursor: default;
+  transition: transform 0.1s;
+  overflow: visible;
+}
+
+.chip:hover { transform: scale(1.08); z-index: 20; }
+
+.chip-abbr {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.chip-icon {
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Correct — green cell */
+.chip.correct {
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.35);
+}
+.chip.correct .chip-abbr { color: #d1fae5; }
+.chip.correct .chip-icon { color: #4ade80; }
+
+/* Wrong — red cell, dimmed */
+.chip.wrong {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  opacity: 0.5;
+}
+.chip.wrong .chip-abbr { color: #fca5a5; }
+.chip.wrong .chip-icon { color: #f87171; }
+
+/* Pending — neutral, team visible */
+.chip.pending {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #1e2733;
+}
+.chip.pending .chip-abbr { color: #8a9ab0; }
+.chip.pending .chip-icon { color: #4a5568; }
+
+/* Hidden — locked */
+.chip.hidden {
+  background: #0d1117;
+  border: 1px dashed #1e2733;
+  justify-content: center;
+}
+.chip.hidden .chip-abbr { color: #2a3a4a; font-size: 14px; letter-spacing: 0; }
+.chip.hidden .chip-icon { display: none; }
+
+/* Empty — no pick */
+.chip.empty {
+  background: transparent;
+  border: 1px solid #111820;
+  justify-content: center;
+}
+.chip.empty .chip-abbr { color: #1e2733; font-size: 14px; letter-spacing: 0; }
+.chip.empty .chip-icon { display: none; }
+
+/* Live — amber pulse */
+.chip.live {
+  background: rgba(245,166,35,0.1);
+  border: 1px solid rgba(245,166,35,0.3);
+}
+.chip.live .chip-abbr { color: #fde68a; }
+.chip.live .chip-icon {
+  color: #f5a623;
+  animation: blink 1.2s infinite;
+}
+
+/* ── Bonus badge ── */
+.bonus-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f5a623;
+  color: #080a0f;
+  font-family: 'Oswald', sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ── Playoff row accent ── */
+.game-row.playoff td.s0 {
+  border-left: 2px solid #3a4a5a;
+}
+
+.game-row.superbowl td.s0 {
+  border-left: 2px solid rgba(200,160,0,0.4);
+}
+
+/* ── Tooltip on hover ── */
+.chip[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2233;
+  border: 1px solid #2a3a4a;
+  color: #e8eaf0;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 30;
+}
+
+.chip[data-tip]:hover::after { opacity: 1; }
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid #1e2733;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #4a5568;
+}
+
+.legend-chip {
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+}
+</style>
+</head>
+<body>
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <div class="page-title">PICKS GRID</div>
+    <div class="page-sub">The Boys League · 2024 Season</div>
+  </div>
+  <div class="week-filter">
+    <button class="wf-btn active">All</button>
+    <button class="wf-btn">Reg Season</button>
+    <button class="wf-btn playoff">Playoffs</button>
+    <button class="wf-btn playoff">WC</button>
+    <button class="wf-btn playoff">DIV</button>
+    <button class="wf-btn playoff">CONF</button>
+    <button class="wf-btn playoff">SB</button>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-chip" style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.35);color:#4ade80;display:flex;align-items:center;justify-content:center">✓</div>
+    Correct
+  </div>
+  <div class="legend-item">
+    <div class="legend-chip" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#f87171;opacity:0.5;display:flex;align-items:center;justify-content:center">✗</div>
+    Wrong
+  </div>
+  <div class="legend-item">
+    <div class="legend-chip" style="background:rgba(255,255,255,0.04);border:1px solid #1e2733;color:#4a5568;display:flex;align-items:center;justify-content:center">?</div>
+    Pending
+  </div>
+  <div class="legend-item">
+    <div class="legend-chip" style="background:#0d1117;border:1px dashed #1e2733;color:#2a3a4a;display:flex;align-items:center;justify-content:center">🔒</div>
+    Hidden
+  </div>
+  <div class="legend-item">
+    <div class="legend-chip" style="background:transparent;border:1px solid #111820;color:#1e2733;display:flex;align-items:center;justify-content:center">—</div>
+    No pick
+  </div>
+  <div class="legend-item" style="margin-left:auto">
+    <div style="background:#f5a623;color:#080a0f;font-family:'Oswald',sans-serif;font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px">+2</div>
+    Sole correct bonus
+  </div>
+</div>
+
+<!-- Table -->
+<div class="table-outer">
+<table class="picks-table">
+  <thead>
+
+    <!-- Player names — ordered by standings -->
+    <tr class="thead-names">
+      <th class="s0 col-label" colspan="4"></th>
+      <th class="leader">Marcus</th>
+      <th class="me">You</th>
+      <th class="other" style="color:#8a9ab0">Alex</th>
+      <th class="other" style="color:#8a9ab0">Taylor</th>
+      <th class="other" style="color:#8a9ab0">Morgan</th>
+      <th class="other" style="color:#8a9ab0">Jordan</th>
+    </tr>
+
+    <!-- Rank -->
+    <tr class="thead-rank">
+      <th class="s0" colspan="4"></th>
+      <th class="leader">#1</th>
+      <th class="me">#2</th>
+      <th>#3</th>
+      <th>#4</th>
+      <th>#5</th>
+      <th>#6</th>
+    </tr>
+
+    <!-- Season points -->
+    <tr class="thead-pts">
+      <th class="s0" colspan="4" style="text-align:left;padding-left:10px;font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2px;color:#2a3a4a;font-weight:400;border-bottom:2px solid #1e2733">SEASON PTS</th>
+      <th class="leader">201<span class="pts-sub">pts</span></th>
+      <th class="me">187<span class="pts-sub">pts</span></th>
+      <th class="other">178<span class="pts-sub">pts</span></th>
+      <th class="other">164<span class="pts-sub">pts</span></th>
+      <th class="other">159<span class="pts-sub">pts</span></th>
+      <th class="other">142<span class="pts-sub">pts</span></th>
+    </tr>
+
+    <!-- Column labels -->
+    <tr class="col-labels">
+      <th class="s0">Wk</th>
+      <th class="s1">Time</th>
+      <th class="s2">Matchup</th>
+      <th class="s3">Score</th>
+      <th>Marcus</th>
+      <th>You</th>
+      <th>Alex</th>
+      <th>Taylor</th>
+      <th>Morgan</th>
+      <th>Jordan</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <!-- ── WEEK 17 ── -->
+    <tr class="week-group">
+      <td colspan="20">Week 17 · Regular Season · Dec 21–23</td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Sat 1:00</td>
+      <td class="s2 matchup-cell"><span class="away">LAC</span><span class="sep">@</span><span class="home">NE</span></td>
+      <td class="s3 score-cell">40–7<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAC · +1pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAC · +2pt (sole)"><div class="chip-abbr">LAC</div><div class="chip-icon">✓</div><div class="bonus-badge">+2</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAC · +1pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAC · +1pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAC · +1pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="NE · 0pt"><div class="chip-abbr">NE</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Sat 4:30</td>
+      <td class="s2 matchup-cell"><span class="away">DEN</span><span class="sep">@</span><span class="home">CIN</span></td>
+      <td class="s3 score-cell">24–30<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="CIN · +1pt"><div class="chip-abbr">CIN</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="DEN · 0pt"><div class="chip-abbr">DEN</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="CIN · +1pt"><div class="chip-abbr">CIN</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="CIN · +1pt"><div class="chip-abbr">CIN</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="CIN · +1pt"><div class="chip-abbr">CIN</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="DEN · 0pt"><div class="chip-abbr">DEN</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Sat 8:00</td>
+      <td class="s2 matchup-cell"><span class="away">ARI</span><span class="sep">@</span><span class="home">LAR</span></td>
+      <td class="s3 score-cell">9–13<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +1pt"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +1pt"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +1pt"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +1pt"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +1pt"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +1pt"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Sun 1:00</td>
+      <td class="s2 matchup-cell"><span class="away">NYJ</span><span class="sep">@</span><span class="home">BUF</span></td>
+      <td class="s3 score-cell">14–40<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +1pt"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +1pt"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +1pt"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +1pt"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +1pt"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +1pt"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Sun 1:00</td>
+      <td class="s2 matchup-cell"><span class="away">DAL</span><span class="sep">@</span><span class="home">PHI</span></td>
+      <td class="s3 score-cell">7–41<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Sun 4:25</td>
+      <td class="s2 matchup-cell"><span class="away">GB</span><span class="sep">@</span><span class="home">MIN</span></td>
+      <td class="s3 score-cell">25–27<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="GB · 0pt"><div class="chip-abbr">GB</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="GB · 0pt"><div class="chip-abbr">GB</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="MIN · +2pt (sole)"><div class="chip-abbr">MIN</div><div class="chip-icon">✓</div><div class="bonus-badge">+2</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="GB · 0pt"><div class="chip-abbr">GB</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="GB · 0pt"><div class="chip-abbr">GB</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="GB · 0pt"><div class="chip-abbr">GB</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Sun 8:20</td>
+      <td class="s2 matchup-cell"><span class="away">ATL</span><span class="sep">@</span><span class="home">WSH</span></td>
+      <td class="s3 score-cell">24–30<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="WSH · +1pt"><div class="chip-abbr">WSH</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="WSH · +1pt"><div class="chip-abbr">WSH</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="WSH · +1pt"><div class="chip-abbr">WSH</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="WSH · +1pt"><div class="chip-abbr">WSH</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="WSH · +1pt"><div class="chip-abbr">WSH</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="WSH · +1pt"><div class="chip-abbr">WSH</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">17</td>
+      <td class="s1 time-cell">Mon 8:15</td>
+      <td class="s2 matchup-cell"><span class="away">DET</span><span class="sep">@</span><span class="home">SF</span></td>
+      <td class="s3 score-cell">40–34<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="DET · +1pt"><div class="chip-abbr">DET</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="DET · +1pt"><div class="chip-abbr">DET</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="DET · +1pt"><div class="chip-abbr">DET</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="DET · +1pt"><div class="chip-abbr">DET</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="DET · +1pt"><div class="chip-abbr">DET</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="SF · 0pt"><div class="chip-abbr">SF</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <!-- ── WEEK 18 ── -->
+    <tr class="week-group">
+      <td colspan="20">Week 18 · Regular Season Final · Dec 28–29</td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">18</td>
+      <td class="s1 time-cell">Sat 4:30</td>
+      <td class="s2 matchup-cell"><span class="away">CLE</span><span class="sep">@</span><span class="home">BAL</span></td>
+      <td class="s3 score-cell">10–35<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +1pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +1pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +1pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +1pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +1pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +1pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">18</td>
+      <td class="s1 time-cell">Sun 4:25</td>
+      <td class="s2 matchup-cell"><span class="away">KC</span><span class="sep">@</span><span class="home">DEN</span></td>
+      <td class="s3 score-cell">38–0<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +1pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +1pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +1pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +1pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +1pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="DEN · 0pt"><div class="chip-abbr">DEN</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <!-- ── WILD CARD ── -->
+    <tr class="week-group playoff">
+      <td colspan="20">Wild Card · Playoffs · Jan 11–12</td>
+    </tr>
+
+    <tr class="game-row playoff">
+      <td class="s0 wk-cell playoff">WC</td>
+      <td class="s1 time-cell">Sat 4:30</td>
+      <td class="s2 matchup-cell"><span class="away">LAC</span><span class="sep">@</span><span class="home">HOU</span></td>
+      <td class="s3 score-cell">12–32<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="LAC · 0pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="LAC · 0pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="LAC · 0pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="LAC · 0pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="HOU · +4pt (sole)"><div class="chip-abbr">HOU</div><div class="chip-icon">✓</div><div class="bonus-badge">+4</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="LAC · 0pt"><div class="chip-abbr">LAC</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <tr class="game-row playoff">
+      <td class="s0 wk-cell playoff">WC</td>
+      <td class="s1 time-cell">Sat 8:00</td>
+      <td class="s2 matchup-cell"><span class="away">PIT</span><span class="sep">@</span><span class="home">BAL</span></td>
+      <td class="s3 score-cell">14–28<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +2pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +2pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +2pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +2pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +2pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BAL · +2pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row playoff">
+      <td class="s0 wk-cell playoff">WC</td>
+      <td class="s1 time-cell">Sun 1:00</td>
+      <td class="s2 matchup-cell"><span class="away">MIN</span><span class="sep">@</span><span class="home">LAR</span></td>
+      <td class="s3 score-cell">9–27<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="MIN · 0pt"><div class="chip-abbr">MIN</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="MIN · 0pt"><div class="chip-abbr">MIN</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="MIN · 0pt"><div class="chip-abbr">MIN</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +4pt (sole)"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div><div class="bonus-badge">+4</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="MIN · 0pt"><div class="chip-abbr">MIN</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="LAR · +2pt"><div class="chip-abbr">LAR</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <!-- ── DIVISIONAL ── -->
+    <tr class="week-group playoff">
+      <td colspan="20">Divisional Round · Playoffs · Jan 18–19</td>
+    </tr>
+
+    <tr class="game-row playoff">
+      <td class="s0 wk-cell playoff">DIV</td>
+      <td class="s1 time-cell">Sat 4:30</td>
+      <td class="s2 matchup-cell"><span class="away">HOU</span><span class="sep">@</span><span class="home">KC</span></td>
+      <td class="s3 score-cell">14–23<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +3pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +3pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +3pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +3pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +3pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="KC · +3pt"><div class="chip-abbr">KC</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row playoff">
+      <td class="s0 wk-cell playoff">DIV</td>
+      <td class="s1 time-cell">Sun 6:30</td>
+      <td class="s2 matchup-cell"><span class="away">BAL</span><span class="sep">@</span><span class="home">BUF</span></td>
+      <td class="s3 score-cell">27–31<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +6pt (upset)"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="BAL · 0pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +6pt (upset)"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="BAL · 0pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="BUF · +6pt (upset)"><div class="chip-abbr">BUF</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="BAL · 0pt"><div class="chip-abbr">BAL</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <!-- ── SUPER BOWL ── -->
+    <tr class="week-group superbowl">
+      <td colspan="20">Super Bowl LIX · New Orleans · Feb 9</td>
+    </tr>
+
+    <tr class="game-row superbowl">
+      <td class="s0 wk-cell superbowl">SB</td>
+      <td class="s1 time-cell">Sun 6:30</td>
+      <td class="s2 matchup-cell"><span class="away">KC</span><span class="sep">@</span><span class="home">PHI</span></td>
+      <td class="s3 score-cell">22–40<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="KC · 0pt"><div class="chip-abbr">KC</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +5pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +5pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +5pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="KC · 0pt"><div class="chip-abbr">KC</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="KC · 0pt"><div class="chip-abbr">KC</div><div class="chip-icon">✗</div></div></td>
+    </tr>
+
+    <!-- Current week with live + pending + hidden -->
+    <tr class="week-group">
+      <td colspan="20">Week 7 · Current · Oct 17–21</td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">7</td>
+      <td class="s1 time-cell">Thu 8:15</td>
+      <td class="s2 matchup-cell"><span class="away">PHI</span><span class="sep">@</span><span class="home">CHI</span></td>
+      <td class="s3 score-cell">28–14<span class="game-status final">Final</span></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +2pt (sole)"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div><div class="bonus-badge">+2</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip wrong" data-tip="CHI · 0pt"><div class="chip-abbr">CHI</div><div class="chip-icon">✗</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+      <td class="pick-cell"><div class="chip correct" data-tip="PHI · +1pt"><div class="chip-abbr">PHI</div><div class="chip-icon">✓</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">7</td>
+      <td class="s1 time-cell">Sun 1:00</td>
+      <td class="s2 matchup-cell"><span class="away">KC</span><span class="sep">@</span><span class="home">BAL</span></td>
+      <td class="s3 score-cell">17–21<span class="game-status live">● Live Q3</span></td>
+      <td class="pick-cell"><div class="chip live" data-tip="BAL · Live"><div class="chip-abbr">BAL</div><div class="chip-icon">●</div></div></td>
+      <td class="pick-cell"><div class="chip live" data-tip="KC · Live"><div class="chip-abbr">KC</div><div class="chip-icon">●</div></div></td>
+      <td class="pick-cell"><div class="chip live" data-tip="BAL · Live"><div class="chip-abbr">BAL</div><div class="chip-icon">●</div></div></td>
+      <td class="pick-cell"><div class="chip live" data-tip="BAL · Live"><div class="chip-abbr">BAL</div><div class="chip-icon">●</div></div></td>
+      <td class="pick-cell"><div class="chip live" data-tip="KC · Live"><div class="chip-abbr">KC</div><div class="chip-icon">●</div></div></td>
+      <td class="pick-cell"><div class="chip live" data-tip="BAL · Live"><div class="chip-abbr">BAL</div><div class="chip-icon">●</div></div></td>
+    </tr>
+
+    <tr class="game-row">
+      <td class="s0 wk-cell">7</td>
+      <td class="s1 time-cell">Sun 4:25</td>
+      <td class="s2 matchup-cell"><span class="away">BUF</span><span class="sep">@</span><span class="home">NYJ</span></td>
+      <td class="s3 score-cell">—<span class="game-status open">Open</span></td>
+      <td class="pick-cell"><div class="chip hidden"><div class="chip-abbr">🔒</div></div></td>
+      <td class="pick-cell"><div class="chip pending" data-tip="BUF · pending"><div class="chip-abbr">BUF</div><div class="chip-icon">?</div></div></td>
+      <td class="pick-cell"><div class="chip empty"><div class="chip-abbr">—</div></div></td>
+      <td class="pick-cell"><div class="chip hidden"><div class="chip-abbr">🔒</div></div></td>
+      <td class="pick-cell"><div class="chip hidden"><div class="chip-abbr">🔒</div></div></td>
+      <td class="pick-cell"><div class="chip pending" data-tip="NYJ · pending"><div class="chip-abbr">NYJ</div><div class="chip-icon">?</div></div></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<script>
+// Week filter buttons — cosmetic for now
+document.querySelectorAll('.wf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.wf-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
