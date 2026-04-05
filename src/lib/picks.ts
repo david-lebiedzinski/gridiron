@@ -107,11 +107,22 @@ export async function fetchSeasonGames(
       : g.live_game_state;
 
     let status: GridGame["status"] = "pre";
-    if (g.winner_abbr) {
-      status = "final";
-    } else if (live?.status === "in_progress" || live?.status === "in") {
+    if (
+      live?.status === "STATUS_IN_PROGRESS" ||
+      live?.status === "STATUS_HALFTIME" ||
+      live?.status === "in_progress" ||
+      live?.status === "in"
+    ) {
       status = "in_progress";
-    } else if (live?.status === "post" || live?.status === "final") {
+    } else if (
+      live?.status === "STATUS_FINAL" ||
+      live?.status === "post" ||
+      live?.status === "final"
+    ) {
+      status = "final";
+    } else if (live?.status === "STATUS_SCHEDULED") {
+      status = "pre";
+    } else if (g.winner_abbr) {
       status = "final";
     }
 
@@ -128,8 +139,8 @@ export async function fetchSeasonGames(
       kickoff_time: g.kickoff_time,
       winner_abbr: g.winner_abbr,
       status,
-      home_score: live?.home_score ?? null,
-      away_score: live?.away_score ?? null,
+      home_score: live?.home_score != null ? Number(live.home_score) : null,
+      away_score: live?.away_score != null ? Number(live.away_score) : null,
       period: live?.period ?? null,
       display_clock: live?.display_clock ?? null,
     };
@@ -241,17 +252,15 @@ export function deriveChipState(
     return "empty";
   }
 
-  if (game.winner_abbr) {
-    return pick.picked_team_abbr === game.winner_abbr ? "correct" : "wrong";
+  if (game.status === "in_progress") {
+    return "live";
   }
 
   if (game.status === "final") {
-    // Game final but no winner set yet
+    if (game.winner_abbr) {
+      return pick.picked_team_abbr === game.winner_abbr ? "correct" : "wrong";
+    }
     return pick.is_correct ? "correct" : "pending";
-  }
-
-  if (game.status === "in_progress") {
-    return "live";
   }
 
   // Pre-kickoff
@@ -266,12 +275,8 @@ export function deriveChipState(
   return "hidden";
 }
 
-export function isGameLocked(_game: GridGame): boolean {
-  // TODO: re-enable lock check
-  // return (
-  //   game.status !== "pre" || new Date(game.kickoff_time) <= new Date()
-  // );
-  return false;
+export function isGameLocked(game: GridGame): boolean {
+  return game.status !== "pre";
 }
 
 export function buildWeekLabel(weekNumber: number, weekType: WeekType): string {

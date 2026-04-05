@@ -71,16 +71,18 @@ export default function GridScreen() {
   }
 
   return (
-    <div className="page" style={{ maxWidth: "80%" }}>
+    <Page>
       <Page.Header
         eyebrow={eyebrow}
         title={GRID.title}
         subtitle={GRID.subtitle}
       />
-      <Section>
-        <Section.Card>{content}</Section.Card>
-      </Section>
-      <Toast message={toast?.message ?? null} type={toast?.type ?? "info"} />
-    </div>
+      <div style={{ paddingTop: 16 }}>
+        <Section>
+          <Section.Card>{content}</Section.Card>
+        </Section>
+        <Toast message={toast?.message ?? null} type={toast?.type ?? "info"} />
+      </div>
+    </Page>
   );
 }

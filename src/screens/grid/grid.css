@@ -11,19 +11,16 @@
   overflow-x: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  max-height: calc(100vh - 210px);
+  max-height: calc(100vh - 225px);
 }
 
+/* Hide scrollbar but keep scrolling */
+.grid-table-outer {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
+}
 .grid-table-outer::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-.grid-table-outer::-webkit-scrollbar-track {
-  background: transparent;
-}
-.grid-table-outer::-webkit-scrollbar-thumb {
-  background: var(--border-md);
-  border-radius: 2px;
+  display: none; /* Chrome / Safari */
 }
 
 /* ── Table ── */
@@ -102,12 +99,10 @@
 .week-group.playoff td {
   color: var(--text-3);
   background: #080c10;
-  border-left: 2px solid var(--text-3);
 }
 .week-group.superbowl td {
   color: #8a7020;
   background: #0a0904;
-  border-left: 2px solid rgba(181, 140, 12, 0.4);
 }
 .week-group.past td {
   color: var(--text-3);
@@ -122,20 +117,12 @@
   border-bottom: 1px solid rgba(30, 39, 51, 0.4);
 }
 
-.game-row:hover {
-  background: rgba(255, 255, 255, 0.012);
-}
 .game-row.past {
   opacity: 0.65;
 }
-.game-row.playoff td:first-child {
-  border-left: 2px solid var(--text-3);
-}
-.game-row.superbowl td:first-child {
-  border-left: 2px solid rgba(181, 140, 12, 0.4);
-}
+
 .game-row td {
-  padding: 8px 16px;
+  padding: 5px 12px;
   vertical-align: middle;
 }
 
@@ -154,56 +141,54 @@
   color: rgba(181, 140, 12, 0.7);
 }
 
-.time-cell {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text);
-  font-weight: 300;
-}
-
-.matchup-cell {
+/* ── Game info (single-cell layout) ── */
+.game-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
+  min-width: 220px;
 }
 
-.matchup-cell .away {
+.gi-away {
   color: var(--text);
+  width: 38px;
+  text-align: right;
 }
-.matchup-cell .sep {
-  color: var(--text-3);
-  margin: 0 6px;
-  font-size: 11px;
-  vertical-align: middle;
-}
-.matchup-cell .home {
+.gi-home {
   color: var(--text-2);
+  width: 38px;
+  text-align: left;
 }
-
-.score-cell {
-  font-family: var(--font-mono);
-  font-size: 14px;
+.gi-score {
   color: var(--text);
-  font-weight: 300;
+  width: 24px;
+  text-align: center;
 }
-
-.result-cell {
-  font-family: var(--font-display);
-  font-size: 12px;
+.gi-center {
+  font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  text-align: center;
+  min-width: 60px;
 }
-
-.result-cell.final {
-  color: var(--text);
+.center-open {
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-2);
+  font-weight: 300;
 }
-.result-cell.live {
+.center-final {
+  color: var(--text-3);
+}
+.center-live {
   color: var(--accent);
   animation: grid-blink 1.4s infinite;
-}
-.result-cell.open {
-  color: var(--green);
 }
 
 @keyframes grid-blink {
@@ -228,7 +213,7 @@
   align-items: center;
   justify-content: space-between;
   width: 54px;
-  height: 28px;
+  height: 24px;
   border-radius: 3px;
   padding: 0 6px;
   position: relative;
@@ -432,9 +417,7 @@
 /* ── Large screen ── */
 @media (min-width: 900px) {
   .chip {
-    width: 58px;
-    height: 30px;
-    padding: 0 7px;
+    padding: 7px;
   }
   .chip-abbr {
     font-size: 14px;

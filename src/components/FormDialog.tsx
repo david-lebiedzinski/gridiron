@@ -11,6 +11,7 @@ interface FormDialogProps {
   submitLabel: string;
   onSubmit: () => void;
   children: ReactNode;
+  wide?: boolean;
 }
 
 export default function FormDialog({
@@ -22,6 +23,7 @@ export default function FormDialog({
   submitLabel,
   onSubmit,
   children,
+  wide,
 }: FormDialogProps) {
   let descriptionEl: ReactNode = undefined;
   if (description) {
@@ -37,7 +39,7 @@ export default function FormDialog({
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="dialog-overlay" />
-        <Dialog.Content className="dialog-content">
+        <Dialog.Content className={wide ? "dialog-content dialog-content-wide" : "dialog-content"}>
           <Dialog.Title className="dialog-title">{title}</Dialog.Title>
           {descriptionEl}
           {children}

@@ -12,6 +12,7 @@ import type { GridWeek, GridMember, GridPick } from "../../lib/picks";
 import { getLeagueMembers } from "../../lib/leagues";
 import { getSeasonSettings } from "../../lib/commissioner";
 import { calculateLeaderboard } from "../../lib/scoring";
+import { supabase } from "../../lib/supabase";
 import type { SeasonSettings } from "../../types";
 
 interface ToastState {
@@ -155,6 +156,48 @@ export function usePicksGrid(): UsePicksGridResult {
       cancelled = true;
     };
   }, [leagueId, leagueSeasonId, nflSeasonId, userId]);
+
+  // ─── Realtime: live_game_state changes ────────────────────
+
+  const refreshGames = useCallback(async () => {
+    if (!nflSeasonId) {
+      return;
+    }
+    try {
+      const games = await fetchSeasonGames(nflSeasonId);
+      const weekNum = getCurrentWeekNumber(games);
+      const grouped = groupGamesByWeek(games, weekNum);
+      setWeeks(grouped);
+      setCurrentWeekNumber(weekNum);
+    } catch {
+      // Silent — don't overwrite existing error or loading state
+    }
+  }, [nflSeasonId]);
+
+  useEffect(() => {
+    if (!nflSeasonId) {
+      return;
+    }
+
+    const channel = supabase
+      .channel("live-game-state")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "live_game_state",
+        },
+        () => {
+          refreshGames();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [nflSeasonId, refreshGames]);
 
   // ─── Pick cycling ─────────────────────────────────────────
 

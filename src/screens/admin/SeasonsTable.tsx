@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import Table from "../../components/DataTable";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import {
@@ -14,9 +15,10 @@ import type { NFLSeason } from "../../types";
 
 interface SeasonRowProps {
   season: NFLSeason & { created_at?: string };
+  onNavigate: (id: string) => void;
 }
 
-function SeasonRow({ season }: SeasonRowProps) {
+function SeasonRow({ season, onNavigate }: SeasonRowProps) {
   let statusBadge: ReactNode = undefined;
   if (season.is_active) {
     statusBadge = <span className="badge badge-active">{ADMIN_SEASONS.badgeActive}</span>;
@@ -29,8 +31,18 @@ function SeasonRow({ season }: SeasonRowProps) {
     { month: "short", year: "numeric" },
   );
 
+  function handleClick() {
+    onNavigate(season.id);
+  }
+
   return (
-    <tr className={!season.is_active ? "row-dim" : ""}>
+    <tr
+      className={[
+        !season.is_active ? "row-dim" : "",
+        "row-clickable",
+      ].filter(Boolean).join(" ")}
+      onClick={handleClick}
+    >
       <Table.BoldCell>{ADMIN_SEASONS.seasonLabel(season.year)}</Table.BoldCell>
       <Table.Cell>{statusBadge}</Table.Cell>
       <Table.DimCell>{createdDate}</Table.DimCell>
@@ -47,6 +59,7 @@ const COLUMNS = [
 ];
 
 export default function SeasonsTable() {
+  const navigate = useNavigate();
   const [seasons, setSeasons] = useState<NFLSeason[]>([]);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -67,6 +80,10 @@ export default function SeasonsTable() {
   }
 
   const nextYear = calculateNextSeasonYear(seasons);
+
+  function handleSeasonClick(id: string) {
+    navigate(`/admin/seasons/${id}`);
+  }
 
   async function handleStartSeason() {
     setStarting(true);
@@ -117,6 +134,7 @@ export default function SeasonsTable() {
           <SeasonRow
             key={s.id}
             season={s as NFLSeason & { created_at?: string }}
+            onNavigate={handleSeasonClick}
           />
         )}
       />

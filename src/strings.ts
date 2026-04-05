@@ -311,11 +311,53 @@ export const DANGER_ZONE = {
     "Delete this league permanently? All seasons, picks, and member data will be lost.",
 } as const;
 
+/* ── Admin Game Editor ────────────────────────────────────────── */
+
+export const ADMIN_GAME_EDITOR = {
+  pageTitle: (year: number) => `${year} Season`,
+  pageSubtitle: "Edit game states for testing.",
+  backToAdmin: "← Back to Admin",
+
+  colMatchup: "Matchup",
+  colKickoff: "Kickoff",
+  colStatus: "Status",
+  colScore: "Score",
+
+  editButton: "Edit",
+  simulateButton: "Sim",
+  resetButton: "Reset",
+
+  dialogTitle: "Edit Game State",
+  dialogDescription: (away: string, home: string) => `${away} @ ${home}`,
+  dialogSubmit: "Save",
+
+  fieldStatus: "Status",
+  fieldPeriod: "Period",
+  fieldClock: "Clock",
+  fieldHomeScore: (abbr: string) => `${abbr} Score`,
+  fieldAwayScore: (abbr: string) => `${abbr} Score`,
+  fieldPossession: "Possession",
+  fieldDownDistance: "Down & Distance",
+  fieldLastPlay: "Last Play",
+  fieldRedZone: "Red Zone",
+
+  possessionNone: "None",
+
+  statusScheduled: "Scheduled",
+  statusInProgress: "In Progress",
+  statusHalftime: "Halftime",
+  statusFinal: "Final",
+
+  emptyWeek: "No games in this week.",
+  confirmReset: "Reset this game to scheduled defaults?",
+  confirmResetTitle: "Reset Game State",
+} as const;
+
 /* ── Picks Grid ──────────────────────────────────────────────── */
 
 export const GRID = {
   eyebrow: "Season",
-  title: "Picks Grid",
+  title: "Grid",
   subtitle: "View and make your picks across the entire season.",
 
   legendCorrect: "Correct",
@@ -326,17 +368,18 @@ export const GRID = {
   legendTapHint: "TAP YOUR CELLS TO PICK",
 
   colWk: "Wk",
-  colTime: "Date",
+  colStatus: "Status",
   colMatchup: "Matchup",
-  colScore: "Score",
-  colResult: "Status",
   colGame: "Game",
   colSeasonPts: "SEASON PTS",
   colPts: "PTS",
 
   statusFinal: "Final",
-  statusLive: "\u25CF Live",
+  statusLive: "Live",
+  statusHalf: "Half",
   statusOpen: "Open",
+  periodLabel: (period: number) =>
+    period <= 4 ? `Q${period}` : `OT${period - 4 > 1 ? period - 4 : ""}`,
 
   headerYou: "You",
   ptsSuffix: "pts",

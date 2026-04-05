@@ -37,17 +37,14 @@ export default function PicksTable({
     return () => clearTimeout(timer);
   }, [currentWeekNumber]);
 
-  const totalCols = 5 + members.length;
+  const totalCols = 1 + members.length;
 
   return (
     <div className="grid-table-outer">
       <table className="picks-table">
         <thead>
           <tr className="table-header">
-            <th className="game-col">{GRID.colTime}</th>
-            <th className="game-col">{GRID.colMatchup}</th>
-            <th className="game-col">{GRID.colScore}</th>
-            <th className="game-col">{GRID.colResult}</th>
+            <th className="game-col">{GRID.colGame}</th>
             {members.map((m) => (
               <th key={m.user_id} className={m.isCurrentUser ? "me-col" : ""}>
                 {m.isCurrentUser ? GRID.headerYou : m.username}
@@ -140,38 +137,49 @@ function GameRow({
     .join(" ");
 
   const locked = isGameLocked(game);
-  const score =
-    game.home_score != null && game.away_score != null
-      ? `${game.away_score}\u2013${game.home_score}`
-      : "0\u20130";
+  const hasScore = game.status === "final" || game.status === "in_progress";
 
-  const resultClass =
-    game.status === "final" ? "final" : game.status === "in_progress" ? "live" : "open";
-  const resultLabel =
-    game.status === "final"
-      ? GRID.statusFinal
-      : game.status === "in_progress"
-        ? GRID.statusLive
-        : GRID.statusOpen;
+  let centerLabel: string;
+  let centerClass: string;
+  if (game.status === "final") {
+    centerLabel = GRID.statusFinal;
+    centerClass = "center-final";
+  } else if (game.status === "in_progress") {
+    centerLabel = formatGameClock(game);
+    centerClass = "center-live";
+  } else {
+    centerLabel = formatTime(game.kickoff_time);
+    centerClass = "center-open";
+  }
 
   return (
     <tr className={rowClass}>
-      <td className="game-col time-cell">{formatTime(game.kickoff_time)}</td>
-      <td className="game-col matchup-cell">
-        <span className="away">{game.away_abbr}</span>
-        <span className="sep">@</span>
-        <span className="home">{game.home_abbr}</span>
+      <td className="game-col">
+        <div className="game-info">
+          <span className="gi-away">{game.away_abbr}</span>
+          {hasScore && <span className="gi-score">{game.away_score}</span>}
+          <span className={`gi-center ${centerClass}`}>{centerLabel}</span>
+          {hasScore && <span className="gi-score">{game.home_score}</span>}
+          <span className="gi-home">{game.home_abbr}</span>
+        </div>
       </td>
-      <td className="game-col score-cell">{score}</td>
-      <td className={`game-col result-cell ${resultClass}`}>{resultLabel}</td>
 
       {members.map((m) => {
         const isMine = m.user_id === currentUserId;
         const pick = picksByKey.get(`${m.user_id}:${game.id}`);
-        const state = deriveChipState(pick, game, isMine, picksVisibleBeforeKickoff);
+        const state = deriveChipState(
+          pick,
+          game,
+          isMine,
+          picksVisibleBeforeKickoff,
+        );
 
         let bonusLabel: string | null = null;
-        if (state === "correct" && pick?.is_sole_correct && pick.points_awarded != null) {
+        if (
+          state === "correct" &&
+          pick?.is_sole_correct &&
+          pick.points_awarded != null
+        ) {
           bonusLabel = `+${pick.points_awarded}`;
         }
 
@@ -226,13 +234,22 @@ function isPlayoff(week: GridWeek): boolean {
   );
 }
 
+function formatGameClock(game: GridGame): string {
+  if (game.period != null && game.display_clock) {
+    return `${GRID.periodLabel(game.period)}, ${game.display_clock}`;
+  }
+  if (game.period != null && !game.display_clock) {
+    return GRID.statusHalf;
+  }
+  return GRID.statusLive;
+}
+
 function formatTime(kickoffTime: string): string {
   const d = new Date(kickoffTime);
   const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
-  const mon = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()];
-  const date = d.getDate();
+
   const h = d.getHours() % 12 || 12;
   const m = d.getMinutes().toString().padStart(2, "0");
   const ampm = d.getHours() >= 12 ? "PM" : "AM";
-  return `${day}, ${mon} ${date}, ${h}:${m}${ampm}`;
+  return `${day}, ${h}:${m}${ampm}`;
 }

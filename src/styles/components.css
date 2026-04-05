@@ -89,6 +89,7 @@ body {
   font-size: 42px;
   line-height: 1;
   letter-spacing: 0.03em;
+  margin-top: 6px;
   color: var(--text);
 }
 .t-display-lg {
@@ -492,6 +493,14 @@ body {
   opacity: 0.75;
 }
 
+/* Clickable row — e.g. season drill-down */
+.table tbody tr.row-clickable {
+  cursor: pointer;
+}
+.table tbody tr.row-clickable:hover {
+  background: var(--bg-2);
+}
+
 .table td {
   padding: 13px 16px;
   font-size: 13px;
@@ -719,6 +728,28 @@ select option {
   color: var(--text);
 }
 
+/* Form grid — two-column layout for dialog forms */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.form-grid .form-group-full {
+  grid-column: 1 / -1;
+}
+
+/* Checkbox row — inline label + checkbox */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-check input[type="checkbox"] {
+  width: auto;
+}
+
 /* Search input — has icon padding built in */
 .search-wrap {
   position: relative;
@@ -864,7 +895,6 @@ select option {
 
 /* Page header — eyebrow + title + optional action */
 .page-header {
-  padding-bottom: 24px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -881,6 +911,7 @@ select option {
   align-items: center;
   gap: 12px;
   margin-bottom: 14px;
+  margin-top: 32px;
 }
 
 .section-line {
@@ -1097,6 +1128,10 @@ select option {
   justify-content: flex-end;
   gap: 8px;
   margin-top: var(--space-4);
+}
+
+.dialog-content-wide {
+  max-width: 560px;
 }
 
 @keyframes dialog-fade-in {

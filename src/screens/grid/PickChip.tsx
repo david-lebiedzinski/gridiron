@@ -53,7 +53,7 @@ function PickChipInner({
     .filter(Boolean)
     .join(" ");
 
-  const displayAbbr = teamAbbr ?? ABBR_BY_STATE[state];
+  const displayAbbr = state === "hidden" ? ABBR_BY_STATE[state] : (teamAbbr ?? ABBR_BY_STATE[state]);
   const icon = ICON_BY_STATE[state];
 
   function handleClick() {

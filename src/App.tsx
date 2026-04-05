@@ -11,6 +11,7 @@ import OnboardingScreen from "./screens/Onboarding";
 import WaitingScreen from "./screens/Waiting";
 import AppShell from "./components/AppShell";
 import AdminPage from "./screens/Admin";
+import SeasonDetailPage from "./screens/admin/SeasonDetail";
 import CommissionerPage from "./screens/Commissioner";
 import ProfilePage from "./screens/Profile";
 import GridScreen from "./screens/Grid";
@@ -125,6 +126,7 @@ export default function App() {
             {/* Super admin */}
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/seasons/:seasonId" element={<SeasonDetailPage />} />
               <Route path="/admin/*" element={<AdminPage />} />
             </Route>
           </Route>
