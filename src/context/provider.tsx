@@ -65,7 +65,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
         setUser(session.user);
-        loadUserData(session.user.id).catch(console.error);
+        setLoading(true);
+        loadUserData(session.user.id)
+          .catch(console.error)
+          .finally(() => setLoading(false));
       }
       if (event === "SIGNED_OUT") {
         setUser(null);
@@ -86,6 +89,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const leagueData = ((await getUserLeagues(user.id)) ??
       []) as LeagueMembership[];
     setMemberships(leagueData);
+  }
+
+  async function refreshProfile() {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    if (data) setProfile(data as Profile);
   }
 
   function setActiveLeague(league: League) {
@@ -112,6 +125,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         activeRole,
         setActiveLeague,
         refreshLeagues,
+        refreshProfile,
         loading,
       }}
     >

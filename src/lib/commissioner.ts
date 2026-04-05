@@ -31,7 +31,52 @@ export async function createLeague(name: string, userId: string) {
     user_id: userId,
   });
 
+  // Auto-create league_season if an active NFL season exists
+  const { data: activeNflSeason } = await supabase
+    .from("nfl_seasons")
+    .select("id, year")
+    .eq("is_active", true)
+    .single();
+
+  if (activeNflSeason) {
+    const { data: leagueSeason } = await supabase
+      .from("league_seasons")
+      .insert({
+        league_id: league.id,
+        nfl_season_id: activeNflSeason.id,
+        name: `${activeNflSeason.year} Season`,
+        is_active: true,
+        locked: false,
+      })
+      .select("id")
+      .single();
+
+    if (leagueSeason) {
+      await supabase
+        .from("season_settings")
+        .insert({ league_season_id: leagueSeason.id, locked: false });
+    }
+  }
+
   return league;
+}
+
+// ─── Rename League ───────────────────────────────────────────
+
+export async function renameLeague(leagueId: string, name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    throw new Error("League name cannot be empty");
+  }
+
+  const { error } = await supabase
+    .from("leagues")
+    .update({ name: trimmed })
+    .eq("id", leagueId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 // ─── Regenerate Invite Code ───────────────────────────────────
@@ -150,6 +195,21 @@ export async function startLeagueSeason(
   }
 
   return leagueSeason;
+}
+
+// ─── Get Season Settings ──────────────────────────────────────
+
+export async function getSeasonSettings(leagueSeasonId: string) {
+  const { data, error } = await supabase
+    .from("season_settings")
+    .select("*")
+    .eq("league_season_id", leagueSeasonId)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+  return data;
 }
 
 // ─── Update Season Settings (before season starts) ───────────

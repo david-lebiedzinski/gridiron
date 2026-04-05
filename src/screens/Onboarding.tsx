@@ -4,6 +4,8 @@ import { supabase } from "../lib/supabase";
 import { updateProfile } from "../lib/auth";
 import { joinLeagueByCode } from "../lib/leagues";
 import { useApp } from "../context/context";
+import { TEAMS } from "../lib/teams";
+import { APP, ONBOARDING } from "../strings";
 import "./onboarding.css";
 
 // ─── Interfaces ──────────────────────────────────────────────
@@ -31,6 +33,7 @@ interface StepTeamProps {
   saving: boolean;
   onComplete: () => void;
   userId: string;
+  refreshProfile: () => Promise<void>;
 }
 
 interface StepInviteCodeProps {
@@ -38,43 +41,6 @@ interface StepInviteCodeProps {
   onSkip: () => void;
   refreshLeagues: () => Promise<void>;
 }
-
-// ─── NFL Teams ───────────────────────────────────────────────
-
-const TEAMS = [
-  { abbr: "ARI", color: "#97233F" },
-  { abbr: "ATL", color: "#A71930" },
-  { abbr: "BAL", color: "#241773" },
-  { abbr: "BUF", color: "#00338D" },
-  { abbr: "CAR", color: "#0085CA" },
-  { abbr: "CHI", color: "#0B1C3E" },
-  { abbr: "CIN", color: "#FB4F14" },
-  { abbr: "CLE", color: "#FF3C00" },
-  { abbr: "DAL", color: "#003594" },
-  { abbr: "DEN", color: "#FB4F14" },
-  { abbr: "DET", color: "#0076B6" },
-  { abbr: "GB", color: "#203731" },
-  { abbr: "HOU", color: "#03202F" },
-  { abbr: "IND", color: "#002C5F" },
-  { abbr: "JAX", color: "#006778" },
-  { abbr: "KC", color: "#E31837" },
-  { abbr: "LAC", color: "#0080C6" },
-  { abbr: "LAR", color: "#003594" },
-  { abbr: "LV", color: "#A5ACAF" },
-  { abbr: "MIA", color: "#008E97" },
-  { abbr: "MIN", color: "#4F2683" },
-  { abbr: "NE", color: "#002244" },
-  { abbr: "NO", color: "#D3BC8D" },
-  { abbr: "NYG", color: "#0B2265" },
-  { abbr: "NYJ", color: "#125740" },
-  { abbr: "PHI", color: "#004C54" },
-  { abbr: "PIT", color: "#FFB612" },
-  { abbr: "SEA", color: "#002244" },
-  { abbr: "SF", color: "#AA0000" },
-  { abbr: "TB", color: "#D50A0A" },
-  { abbr: "TEN", color: "#4B92DB" },
-  { abbr: "WSH", color: "#5A1414" },
-];
 
 // ─── Step wrapper ────────────────────────────────────────────
 
@@ -102,7 +68,7 @@ function StepUsername({ saving, onComplete, userId }: StepUsernameProps) {
     e.preventDefault();
     const trimmed = username.trim();
     if (!trimmed || trimmed.includes(" ")) {
-      setError("Username cannot be empty or contain spaces.");
+      setError(ONBOARDING.usernameErrorEmpty);
       return;
     }
 
@@ -117,14 +83,14 @@ function StepUsername({ saving, onComplete, userId }: StepUsernameProps) {
         .single();
 
       if (existing) {
-        setError("Username already taken. Try another.");
+        setError(ONBOARDING.usernameErrorTaken);
         return;
       }
 
       await updateProfile(userId, { username: trimmed });
       onComplete();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : APP.genericError);
     } finally {
       setBusy(false);
     }
@@ -133,11 +99,11 @@ function StepUsername({ saving, onComplete, userId }: StepUsernameProps) {
   return (
     <form onSubmit={handleSubmit}>
       <div className="step-field">
-        <label className="step-label">Username</label>
+        <label className="step-label">{ONBOARDING.usernameLabel}</label>
         <input
           className={`step-input${error ? " error" : ""}`}
           type="text"
-          placeholder="e.g. jordan_picks"
+          placeholder={ONBOARDING.usernamePlaceholder}
           value={username}
           onChange={(e) => {
             setUsername(e.target.value);
@@ -146,11 +112,11 @@ function StepUsername({ saving, onComplete, userId }: StepUsernameProps) {
         />
         {error && <div className="step-error">{error}</div>}
         <div className="step-hint">
-          Shown to everyone in your league. No spaces.
+          {ONBOARDING.usernameHint}
         </div>
       </div>
       <button className="step-btn" type="submit" disabled={saving || busy}>
-        {busy ? "Saving..." : "Continue →"}
+        {busy ? APP.saving : APP.continue}
       </button>
     </form>
   );
@@ -217,15 +183,15 @@ function StepPhoto({ saving, onComplete, userId }: StepPhotoProps) {
             type="button"
             onClick={() => fileRef.current?.click()}
           >
-            Upload photo
+            {ONBOARDING.uploadPhoto}
           </button>
           <div className="avatar-skip" onClick={() => handleContinue(true)}>
-            Skip for now →
+            {ONBOARDING.skipForNow}
           </div>
         </div>
       </div>
       <div className="avatar-meta">
-        JPG or PNG · Max 5MB · Shows in pick bar + leaderboard
+        {ONBOARDING.photoHint}
       </div>
       <input
         ref={fileRef}
@@ -240,7 +206,7 @@ function StepPhoto({ saving, onComplete, userId }: StepPhotoProps) {
         disabled={saving || busy || !preview}
         onClick={() => handleContinue(false)}
       >
-        {busy ? "Uploading..." : "Continue →"}
+        {busy ? ONBOARDING.uploading : APP.continue}
       </button>
     </>
   );
@@ -248,7 +214,7 @@ function StepPhoto({ saving, onComplete, userId }: StepPhotoProps) {
 
 // ─── Step 3: Team ────────────────────────────────────────────
 
-function StepTeam({ saving, onComplete, userId }: StepTeamProps) {
+function StepTeam({ saving, onComplete, userId, refreshProfile }: StepTeamProps) {
   const [selected, setSelected] = useState<(typeof TEAMS)[number] | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -263,6 +229,7 @@ function StepTeam({ saving, onComplete, userId }: StepTeamProps) {
           avatar_color: selected.color,
         })
         .eq("id", userId);
+      await refreshProfile();
       onComplete();
     } catch {
       // silently continue
@@ -274,7 +241,7 @@ function StepTeam({ saving, onComplete, userId }: StepTeamProps) {
   return (
     <>
       <div className="team-desc">
-        Your team's colors ring your avatar across the app.
+        {ONBOARDING.teamDesc}
       </div>
       <div className="team-picker">
         {TEAMS.map((team) => (
@@ -294,7 +261,7 @@ function StepTeam({ saving, onComplete, userId }: StepTeamProps) {
         ))}
       </div>
       <div className="team-selected-label">
-        Selected: <span>{selected?.abbr ?? "None"}</span>
+        {ONBOARDING.selectedPrefix}<span>{selected?.abbr ?? APP.none}</span>
       </div>
       <button
         className="step-btn"
@@ -302,7 +269,7 @@ function StepTeam({ saving, onComplete, userId }: StepTeamProps) {
         disabled={saving || busy || !selected}
         onClick={handleContinue}
       >
-        {busy ? "Saving..." : "Continue →"}
+        {busy ? APP.saving : APP.continue}
       </button>
     </>
   );
@@ -337,14 +304,14 @@ function StepInviteCode({
       const data = await joinLeagueByCode(code.replace(/-/g, ""));
       setResult({
         type: "success",
-        message: `✓ ${data.league_name} · Welcome!`,
+        message: ONBOARDING.joinSuccess(data.league_name),
       });
       await refreshLeagues();
       setTimeout(() => navigate("/picks"), 1000);
     } catch {
       setResult({
         type: "error",
-        message: "✗ Invalid code. Check with your commissioner.",
+        message: ONBOARDING.joinError,
       });
     } finally {
       setBusy(false);
@@ -362,12 +329,12 @@ function StepInviteCode({
   return (
     <>
       <div className="invite-desc">
-        Your commissioner will share a code to join their league.
+        {ONBOARDING.inviteDesc}
       </div>
       <input
         className={inputClass}
         type="text"
-        placeholder="XXXX-XXXX"
+        placeholder={APP.codePlaceholder}
         maxLength={9}
         value={code}
         onChange={(e) => {
@@ -379,7 +346,7 @@ function StepInviteCode({
         <div className={`invite-result ${result.type}`}>{result.message}</div>
       )}
       <div className="skip-invite">
-        Don't have a code? <span onClick={onSkip}>Skip for now →</span>
+        {ONBOARDING.noCode}<span onClick={onSkip}>{ONBOARDING.skipForNow}</span>
       </div>
       <button
         className="step-btn"
@@ -387,7 +354,7 @@ function StepInviteCode({
         disabled={saving || busy || !code.replace(/-/g, "").trim()}
         onClick={handleJoin}
       >
-        {busy ? "Joining..." : "JOIN LEAGUE →"}
+        {busy ? ONBOARDING.joining : ONBOARDING.joinLeague}
       </button>
     </>
   );
@@ -396,7 +363,7 @@ function StepInviteCode({
 // ─── Main Onboarding ─────────────────────────────────────────
 
 export default function Onboarding() {
-  const { user, refreshLeagues } = useApp();
+  const { user, refreshLeagues, refreshProfile } = useApp();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -419,12 +386,12 @@ export default function Onboarding() {
 
       <div className="onboard-logo">
         <span className="onboard-logo-icon">🏈</span>
-        <span className="onboard-logo-mark">GRIDIRON</span>
-        <div className="onboard-logo-sub">Let's get you set up</div>
+        <span className="onboard-logo-mark">{APP.name}</span>
+        <div className="onboard-logo-sub">{ONBOARDING.subtitle}</div>
       </div>
 
       <div className="onboard-wrap">
-        <StepCard num={1} title="Choose your name" state={stepState(1)}>
+        <StepCard num={1} title={ONBOARDING.step1Title} state={stepState(1)}>
           <StepUsername
             saving={false}
             onComplete={() => markDone(1)}
@@ -432,7 +399,7 @@ export default function Onboarding() {
           />
         </StepCard>
 
-        <StepCard num={2} title="Add a photo" state={stepState(2)}>
+        <StepCard num={2} title={ONBOARDING.step2Title} state={stepState(2)}>
           <StepPhoto
             saving={false}
             onComplete={() => markDone(2)}
@@ -440,15 +407,16 @@ export default function Onboarding() {
           />
         </StepCard>
 
-        <StepCard num={3} title="Pick your team" state={stepState(3)}>
+        <StepCard num={3} title={ONBOARDING.step3Title} state={stepState(3)}>
           <StepTeam
             saving={false}
             onComplete={() => markDone(3)}
             userId={user?.id ?? ""}
+            refreshProfile={refreshProfile}
           />
         </StepCard>
 
-        <StepCard num={4} title="Enter your invite code" state={stepState(4)}>
+        <StepCard num={4} title={ONBOARDING.step4Title} state={stepState(4)}>
           <StepInviteCode
             saving={false}
             onSkip={() => navigate("/waiting")}

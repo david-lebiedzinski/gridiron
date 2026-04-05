@@ -10,6 +10,9 @@ import AuthScreen from "./screens/Auth";
 import OnboardingScreen from "./screens/Onboarding";
 import WaitingScreen from "./screens/Waiting";
 import AppShell from "./components/AppShell";
+import AdminPage from "./screens/Admin";
+import CommissionerPage from "./screens/Commissioner";
+import ProfilePage from "./screens/Profile";
 
 // ─── Placeholder screens (replace as you build each one) ─────
 
@@ -53,29 +56,10 @@ function AnalyticsScreen() {
   );
 }
 
-function CommissionerScreen() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p className="text-[var(--muted)] font-[Oswald] text-lg">
-        Commissioner — coming soon
-      </p>
-    </div>
-  );
-}
-
-function AdminScreen() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p className="text-[var(--muted)] font-[Oswald] text-lg">
-        Admin — coming soon
-      </p>
-    </div>
-  );
-}
 
 // ─── Route guards ────────────────────────────────────────────
 
-function ProtectedRoute() {
+function AuthRequired() {
   const { user, loading } = useApp();
 
   if (loading) {
@@ -87,6 +71,21 @@ function ProtectedRoute() {
   }
 
   if (!user) return <Navigate to="/login" replace />;
+  return <Outlet />;
+}
+
+function GuestOnly() {
+  const { user, loading } = useApp();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (user) return <Navigate to="/picks" replace />;
   return <Outlet />;
 }
 
@@ -102,66 +101,42 @@ function AdminRoute() {
   return <Outlet />;
 }
 
-function PublicRoute() {
-  const { user, memberships, loading } = useApp();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (user) {
-    if (memberships.length === 0) return <Navigate to="/waiting" replace />;
-    return <Navigate to={defaultRoute()} replace />;
-  }
-  return <Outlet />;
-}
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function defaultRoute() {
-  return window.innerWidth < 768 ? "/picks" : "/grid";
-}
-
 // ─── App ─────────────────────────────────────────────────────
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes — redirect to app if logged in */}
-        <Route element={<PublicRoute />}>
+        {/* Guest only — redirect to /picks if already logged in */}
+        <Route element={<GuestOnly />}>
           <Route path="/login" element={<AuthScreen />} />
           <Route path="/signup" element={<AuthScreen />} />
         </Route>
 
-        {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
+        {/* Auth required — no other checks */}
+        <Route element={<AuthRequired />}>
+          <Route path="/onboarding" element={<OnboardingScreen />} />
+          <Route path="/waiting" element={<WaitingScreen />} />
+
           <Route element={<AppShell />}>
             <Route path="/picks" element={<PicksScreen />} />
             <Route path="/grid" element={<GridScreen />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
-            <Route path="/analytics/:userId" element={<AnalyticsScreen />} />
+            <Route path="/analytics" element={<AnalyticsScreen />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
             {/* Commissioner */}
             <Route element={<CommissionerRoute />}>
-              <Route path="/commissioner" element={<CommissionerScreen />} />
-              <Route path="/commissioner/*" element={<CommissionerScreen />} />
+              <Route path="/commissioner" element={<CommissionerPage />} />
+              <Route path="/commissioner/*" element={<CommissionerPage />} />
             </Route>
 
             {/* Super admin */}
             <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminScreen />} />
-              <Route path="/admin/*" element={<AdminScreen />} />
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/*" element={<AdminPage />} />
             </Route>
           </Route>
-
-          {/* Onboarding */}
-          <Route path="/onboarding" element={<OnboardingScreen />} />
-          <Route path="/waiting" element={<WaitingScreen />} />
         </Route>
 
         {/* Catch-all */}

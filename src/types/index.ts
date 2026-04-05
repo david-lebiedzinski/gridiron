@@ -6,12 +6,16 @@ export interface Profile {
   avatar_color: string;
   avatar_url: string | null;
   favorite_team: string | null;
+  theme_intensity: "off" | "subtle" | "normal" | "full";
   is_super_admin: boolean;
 }
 
 export interface ProfileUpdate {
   username?: string;
   avatar_color?: string;
+  avatar_url?: string | null;
+  favorite_team?: string | null;
+  theme_intensity?: "off" | "subtle" | "normal" | "full";
 }
 
 // ─── League ──────────────────────────────────────────────────

@@ -96,6 +96,66 @@ export async function updateStatsVisibility(
   if (error) throw error;
 }
 
+// ─── Get All Leagues (super admin) ────────────────────────────
+
+export async function getAllLeagues() {
+  const { data, error } = await supabase
+    .from("leagues")
+    .select(
+      `
+      id,
+      name,
+      invite_code,
+      commissioner_id,
+      created_at,
+      profiles!commissioner_id ( id, username, avatar_color, avatar_url ),
+      league_members ( user_id )
+    `,
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+// ─── Delete League (super admin) ──────────────────────────────
+
+export async function deleteLeague(leagueId: string) {
+  const { error } = await supabase
+    .from("leagues")
+    .delete()
+    .eq("id", leagueId);
+
+  if (error) throw error;
+}
+
+// ─── Get All Profiles (super admin) ───────────────────────────
+
+export async function getAllProfiles() {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, avatar_color, avatar_url, favorite_team, is_super_admin, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+// ─── Delete Profile (super admin) ─────────────────────────────
+
+export async function deleteProfile(profileId: string) {
+  // Deleting from auth.users cascades to profiles via FK
+  // But from client-side we can only delete the profile row;
+  // the auth user would need a server-side admin call.
+  // For now, just delete the profile (cascades to league_members, picks, etc.)
+  const { error } = await supabase
+    .from("profiles")
+    .delete()
+    .eq("id", profileId);
+
+  if (error) throw error;
+}
+
 // ─── Can View Stats ───────────────────────────────────────────
 
 export async function canViewStats(

@@ -11,6 +11,7 @@ interface AppContextType {
   activeRole: "commissioner" | "member" | null;
   setActiveLeague: (league: League) => void;
   refreshLeagues: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   loading: boolean;
 }
 

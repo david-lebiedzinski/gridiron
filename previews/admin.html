@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Super Admin — Gridiron</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #08090c;
+    --bg-2:       #0f1116;
+    --bg-3:       #161921;
+    --bg-4:       #1d2029;
+    --border:     rgba(255,255,255,0.07);
+    --border-md:  rgba(255,255,255,0.12);
+    --border-hi:  rgba(255,255,255,0.2);
+    --text:       #e8eaf0;
+    --text-2:     #8b8f9e;
+    --text-3:     #545766;
+    --accent:     #e85d04;
+    --accent-dim: rgba(232,93,4,0.15);
+    --accent-2:   #f48c06;
+    --green:      #22c55e;
+    --green-dim:  rgba(34,197,94,0.12);
+    --red:        #ef4444;
+    --red-dim:    rgba(239,68,68,0.12);
+    --blue:       #3b82f6;
+    --blue-dim:   rgba(59,130,246,0.12);
+    --amber:      #f59e0b;
+    --amber-dim:  rgba(245,158,11,0.12);
+    --mono:       'JetBrains Mono', monospace;
+    --sans:       'DM Sans', sans-serif;
+    --display:    'Bebas Neue', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,9,12,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    height: 56px;
+    gap: 0;
+  }
+
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 22px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    text-decoration: none;
+    margin-right: 8px;
+  }
+
+  .nav-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-right: auto;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2px;
+  }
+
+  .nav-links a {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .nav-links a:hover { background: var(--bg-3); color: var(--text); }
+  .nav-links a.active { color: var(--accent); background: var(--accent-dim); }
+
+  .nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    margin-left: 16px;
+    cursor: pointer;
+  }
+
+  /* ─── LAYOUT ─── */
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .page-header-left { flex: 1; }
+
+  .page-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .page-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .page-title {
+    font-family: var(--display);
+    font-size: 42px;
+    letter-spacing: 0.03em;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 6px;
+    font-family: var(--mono);
+  }
+
+  .header-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--green-dim);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .header-action-btn:hover {
+    background: rgba(34,197,94,0.2);
+    border-color: rgba(34,197,94,0.5);
+  }
+
+  /* ─── STAT CARDS ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .stat-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .stat-card:hover { border-color: var(--border-md); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .stat-card.orange::before { background: var(--accent); }
+  .stat-card.green::before  { background: var(--green); }
+  .stat-card.blue::before   { background: var(--blue); }
+  .stat-card.amber::before  { background: var(--amber); }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: var(--display);
+    font-size: 36px;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+
+  .stat-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--mono);
+    margin-top: 4px;
+  }
+
+  .delta-up   { color: var(--green); }
+  .delta-warn { color: var(--amber); }
+  .delta-ok   { color: var(--blue); }
+
+  /* ─── SECTION ─── */
+  .section {
+    margin-bottom: 44px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .icon-orange { background: var(--accent-dim); }
+  .icon-green  { background: var(--green-dim); }
+  .icon-blue   { background: var(--blue-dim); }
+  .icon-amber  { background: var(--amber-dim); }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-action {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  .btn-orange {
+    color: var(--accent);
+    border-color: rgba(232,93,4,0.3);
+    background: var(--accent-dim);
+  }
+  .btn-orange:hover { background: rgba(232,93,4,0.25); border-color: rgba(232,93,4,0.5); }
+
+  .btn-green {
+    color: var(--green);
+    border-color: rgba(34,197,94,0.3);
+    background: var(--green-dim);
+  }
+  .btn-green:hover { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.5); }
+
+  .btn-ghost {
+    color: var(--text-2);
+    border-color: var(--border);
+    background: transparent;
+  }
+  .btn-ghost:hover { background: var(--bg-3); color: var(--text); }
+
+  /* ─── TABLE ─── */
+  .table-wrap {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    padding: 11px 16px;
+    text-align: left;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-3); }
+
+  td {
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .td-mono {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  /* ─── STATUS BADGES ─── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .badge-active  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(34,197,94,0.25); }
+  .badge-active::before  { background: var(--green); }
+
+  .badge-pending { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(245,158,11,0.25); }
+  .badge-pending::before { background: var(--amber); }
+
+  .badge-archived{ background: var(--bg-3);       color: var(--text-3); border: 1px solid var(--border); }
+  .badge-archived::before{ background: var(--text-3); }
+
+  .badge-draft   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(59,130,246,0.25); }
+  .badge-draft::before   { background: var(--blue); }
+
+  /* ─── ROW ACTIONS ─── */
+  .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .action-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    background: transparent;
+  }
+
+  .ab-green  { color: var(--green); border-color: rgba(34,197,94,0.25); }
+  .ab-green:hover  { background: var(--green-dim); }
+
+  .ab-orange { color: var(--accent); border-color: rgba(232,93,4,0.25); }
+  .ab-orange:hover { background: var(--accent-dim); }
+
+  .ab-red    { color: var(--red); border-color: rgba(239,68,68,0.25); }
+  .ab-red:hover    { background: var(--red-dim); }
+
+  .ab-ghost  { color: var(--text-3); border-color: var(--border); }
+  .ab-ghost:hover  { color: var(--text-2); background: var(--bg-3); }
+
+  /* ─── SYNC PANEL ─── */
+  .sync-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .sync-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .sync-card-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+
+  .sync-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .sync-controls select,
+  .sync-controls input {
+    background: var(--bg-3);
+    border: 1px solid var(--border-md);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+    flex: 1;
+  }
+
+  .sync-controls select:focus,
+  .sync-controls input:focus {
+    border-color: var(--accent);
+  }
+
+  .sync-controls select option { background: var(--bg-3); }
+
+  .sync-trigger-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sync-trigger-btn:hover { background: var(--accent-2); }
+
+  .sync-trigger-btn.running {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(34,197,94,0.3);
+    cursor: not-allowed;
+  }
+
+  /* ─── LOG ─── */
+  .log-panel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.8;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  .log-line { display: flex; gap: 10px; }
+  .log-time { color: var(--text-3); flex-shrink: 0; }
+  .log-ok   { color: var(--green); }
+  .log-warn { color: var(--amber); }
+  .log-err  { color: var(--red); }
+  .log-info { color: var(--blue); }
+  .log-dim  { color: var(--text-3); }
+
+  /* ─── CREATE SEASON FORM ─── */
+  .create-form {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 14px;
+    display: none;
+  }
+
+  .create-form.open { display: block; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+
+  .form-group label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    background: var(--bg-3);
+    border: 1px solid var(--border-md);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus { border-color: var(--accent); }
+
+  .form-group select option { background: var(--bg-3); }
+
+  .form-submit {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 9px 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+    height: 36px;
+    align-self: end;
+    white-space: nowrap;
+  }
+
+  .form-submit:hover { background: var(--accent-2); }
+
+  /* ─── LEAGUE SEARCH ─── */
+  .leagues-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 14px 8px 36px;
+    outline: none;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+
+  .search-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-3);
+  }
+
+  .search-input:focus { border-color: var(--border-hi); }
+
+  /* ─── MEMBER PILL ─── */
+  .member-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-2);
+  }
+
+  .member-count span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* ─── INVITE CODE ─── */
+  .invite-code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    letter-spacing: 0.08em;
+    background: var(--bg-3);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* ─── EMPTY STATE ─── */
+  .empty {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--text-3);
+    font-size: 13px;
+  }
+
+  .empty-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    opacity: 0.4;
+  }
+
+  /* ─── DANGER ZONE ─── */
+  .danger-row td { opacity: 0.6; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-hi); }
+
+  /* ─── SPINNER ─── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* ─── TOOLTIP ─── */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-4);
+    border: 1px solid var(--border-md);
+    color: var(--text-2);
+    font-family: var(--mono);
+    font-size: 10px;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 5px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 20;
+  }
+  [data-tip]:hover::after { opacity: 1; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .sync-grid  { grid-template-columns: 1fr; }
+    .form-row   { grid-template-columns: 1fr 1fr; }
+    .page-header { flex-direction: column; align-items: flex-start; }
+    nav { padding: 0 16px; }
+    .page { padding: 20px 16px 60px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a class="nav-logo" href="#">GRIDIRON</a>
+  <span class="nav-badge">Super Admin</span>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#seasons" class="active">NFL Seasons</a>
+    <a href="#sync">ESPN Sync</a>
+    <a href="#leagues">All Leagues</a>
+  </div>
+  <div class="nav-avatar" title="You">JD</div>
+</nav>
+
+<!-- ─── PAGE ─── -->
+<main class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header" id="overview">
+    <div class="page-header-left">
+      <div class="page-eyebrow">Super Admin Control Panel</div>
+      <div class="page-title">Command Center</div>
+      <div class="page-subtitle">Full system access · Only you can see this</div>
+    </div>
+    <button class="header-action-btn" onclick="runFullSync()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Run Full Sync
+    </button>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card orange">
+      <div class="stat-label">Total Leagues</div>
+      <div class="stat-value">3</div>
+      <div class="stat-sub">Across all seasons</div>
+      <div class="stat-delta delta-up">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5l7 7H5z"/></svg>
+        +1 this month
+      </div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Total Members</div>
+      <div class="stat-value">24</div>
+      <div class="stat-sub">Active players</div>
+      <div class="stat-delta delta-up">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5l7 7H5z"/></svg>
+        +3 this season
+      </div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Current NFL Week</div>
+      <div class="stat-value">Week 18</div>
+      <div class="stat-sub">2024 Regular Season</div>
+      <div class="stat-delta delta-ok">
+        Playoffs start Jan 11
+      </div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">Last ESPN Sync</div>
+      <div class="stat-value" style="font-size:28px;">14m ago</div>
+      <div class="stat-sub">All games up to date</div>
+      <div class="stat-delta delta-up">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+        Healthy
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── NFL SEASONS ─── -->
+  <div class="section" id="seasons">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-orange">🏈</div>
+        NFL Seasons
+      </div>
+      <div class="section-line"></div>
+      <button class="section-action btn-orange" onclick="toggleCreateForm()">+ New Season</button>
+    </div>
+
+    <!-- Create form (hidden by default) -->
+    <div class="create-form" id="create-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Season Name</label>
+          <input type="text" placeholder="2025 NFL Season" value="" />
+        </div>
+        <div class="form-group">
+          <label>ESPN Season ID</label>
+          <input type="text" placeholder="2025" />
+        </div>
+        <div class="form-group">
+          <label>Season Type</label>
+          <select>
+            <option>Regular Season</option>
+            <option>Postseason</option>
+            <option>Full (Reg + Post)</option>
+          </select>
+        </div>
+        <button class="form-submit">Create Season</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Season</th>
+            <th>ESPN ID</th>
+            <th>Weeks</th>
+            <th>Status</th>
+            <th>Games Synced</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="font-weight:600;">2024 NFL Season</div>
+              <div style="font-size:11px;color:var(--text-3);">Regular + Playoffs</div>
+            </td>
+            <td class="td-mono">2024</td>
+            <td class="td-mono">18 / 22</td>
+            <td><span class="badge badge-active">Active</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:4px;background:var(--bg-4);border-radius:2px;min-width:60px;">
+                  <div style="width:82%;height:100%;background:var(--green);border-radius:2px;"></div>
+                </div>
+                <span class="td-mono">287</span>
+              </div>
+            </td>
+            <td class="td-mono">Sep 4, 2024</td>
+            <td>
+              <div class="row-actions">
+                <button class="action-btn ab-ghost">Edit</button>
+                <button class="action-btn ab-orange">Set Active</button>
+              </div>
+            </td>
+          </tr>
+          <tr class="danger-row">
+            <td>
+              <div style="font-weight:600;">2023 NFL Season</div>
+              <div style="font-size:11px;color:var(--text-3);">Regular + Playoffs</div>
+            </td>
+            <td class="td-mono">2023</td>
+            <td class="td-mono">22 / 22</td>
+            <td><span class="badge badge-archived">Archived</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:4px;background:var(--bg-4);border-radius:2px;min-width:60px;">
+                  <div style="width:100%;height:100%;background:var(--text-3);border-radius:2px;"></div>
+                </div>
+                <span class="td-mono">338</span>
+              </div>
+            </td>
+            <td class="td-mono">Sep 7, 2023</td>
+            <td>
+              <div class="row-actions">
+                <button class="action-btn ab-ghost">View</button>
+                <button class="action-btn ab-ghost">Restore</button>
+              </div>
+            </td>
+          </tr>
+          <tr class="danger-row">
+            <td>
+              <div style="font-weight:600;">2022 NFL Season</div>
+              <div style="font-size:11px;color:var(--text-3);">Regular + Playoffs</div>
+            </td>
+            <td class="td-mono">2022</td>
+            <td class="td-mono">22 / 22</td>
+            <td><span class="badge badge-archived">Archived</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:4px;background:var(--bg-4);border-radius:2px;min-width:60px;">
+                  <div style="width:100%;height:100%;background:var(--text-3);border-radius:2px;"></div>
+                </div>
+                <span class="td-mono">338</span>
+              </div>
+            </td>
+            <td class="td-mono">Sep 8, 2022</td>
+            <td>
+              <div class="row-actions">
+                <button class="action-btn ab-ghost">View</button>
+                <button class="action-btn ab-ghost">Restore</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-weight:600;">2025 NFL Season</div>
+              <div style="font-size:11px;color:var(--text-3);">Regular Season</div>
+            </td>
+            <td class="td-mono">2025</td>
+            <td class="td-mono">0 / 22</td>
+            <td><span class="badge badge-draft">Draft</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:4px;background:var(--bg-4);border-radius:2px;min-width:60px;">
+                  <div style="width:0%;height:100%;background:var(--blue);border-radius:2px;"></div>
+                </div>
+                <span class="td-mono">0</span>
+              </div>
+            </td>
+            <td class="td-mono">Jan 12, 2025</td>
+            <td>
+              <div class="row-actions">
+                <button class="action-btn ab-green">Activate</button>
+                <button class="action-btn ab-ghost">Edit</button>
+                <button class="action-btn ab-red">Delete</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── ESPN SYNC ─── -->
+  <div class="section" id="sync">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-blue">⚡</div>
+        ESPN Sync
+      </div>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="sync-grid">
+      <!-- Manual Sync -->
+      <div class="sync-card">
+        <div class="sync-card-title">Manual Week Sync</div>
+        <div class="sync-controls">
+          <select id="sync-season">
+            <option>2024 Season</option>
+            <option>2025 Season</option>
+          </select>
+          <select id="sync-week">
+            <option>Week 18</option>
+            <option>Week 17</option>
+            <option>Week 16</option>
+            <option>Wild Card</option>
+            <option>Divisional</option>
+            <option>Conference</option>
+            <option>Super Bowl</option>
+          </select>
+        </div>
+        <button class="sync-trigger-btn" id="sync-btn" onclick="triggerSync()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Sync Week from ESPN
+        </button>
+      </div>
+
+      <!-- Full Season Sync -->
+      <div class="sync-card">
+        <div class="sync-card-title">Bulk Season Sync</div>
+        <div class="sync-controls">
+          <select>
+            <option>2024 Season — All Weeks</option>
+            <option>2025 Season — All Weeks</option>
+          </select>
+        </div>
+        <button class="sync-trigger-btn" onclick="triggerBulkSync()" style="background:var(--bg-3);color:var(--amber);border:1px solid rgba(245,158,11,0.3);" onmouseover="this.style.background='var(--amber-dim)'" onmouseout="this.style.background='var(--bg-3)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16v16H4z"/><path d="M4 12h16M12 4v16"/></svg>
+          Sync Entire Season
+        </button>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-3);font-family:var(--mono);">
+          ⚠ This overwrites all existing game data for the selected season.
+        </div>
+      </div>
+
+      <!-- Sync Log -->
+      <div class="sync-card" style="grid-column: span 2;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="sync-card-title" style="margin-bottom:0;">Sync Log</div>
+          <button class="action-btn ab-ghost" style="font-size:10px;padding:3px 8px;">Clear</button>
+        </div>
+        <div class="log-panel" id="log-panel">
+          <div class="log-line"><span class="log-time">12:47:02</span><span class="log-ok">✓ ESPN sync complete — Week 18 · 16 games imported</span></div>
+          <div class="log-line"><span class="log-time">12:47:01</span><span class="log-info">→ Fetching ESPN scoreboard: season=2024 week=18 type=regular</span></div>
+          <div class="log-line"><span class="log-time">12:47:00</span><span class="log-dim">  Sync triggered manually by admin</span></div>
+          <div class="log-line"><span class="log-time">11:30:14</span><span class="log-ok">✓ ESPN sync complete — Week 17 · 16 games imported</span></div>
+          <div class="log-line"><span class="log-time">11:30:12</span><span class="log-warn">⚠ Rate limit warning: 48/50 requests used (ESPN)</span></div>
+          <div class="log-line"><span class="log-time">11:30:10</span><span class="log-info">→ Fetching ESPN scoreboard: season=2024 week=17 type=regular</span></div>
+          <div class="log-line"><span class="log-time">09:00:01</span><span class="log-ok">✓ Auto-sync triggered by cron job</span></div>
+          <div class="log-line"><span class="log-time">Yesterday</span><span class="log-err">✗ Sync failed: ESPN API timeout (504). Retried 3x.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ALL LEAGUES ─── -->
+  <div class="section" id="leagues">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-icon icon-green">🏆</div>
+        All Leagues
+      </div>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="leagues-toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Search leagues…" id="league-search" onkeyup="filterLeagues()" />
+      </div>
+      <select style="background:var(--bg-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px;outline:none;" onchange="">
+        <option>All Seasons</option>
+        <option>2024 Season</option>
+        <option>2023 Season</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table id="leagues-table">
+        <thead>
+          <tr>
+            <th>League</th>
+            <th>Commissioner</th>
+            <th>Members</th>
+            <th>Active Season</th>
+            <th>Invite Code</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-name="The Boys">
+            <td>
+              <div style="font-weight:600;">The Boys</div>
+              <div style="font-size:11px;color:var(--text-3);">Private · Invite-only</div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;">JD</div>
+                <span>John D.</span>
+              </div>
+            </td>
+            <td>
+              <div class="member-count"><span>12</span> players</div>
+            </td>
+            <td><span class="badge badge-active">2024 Season</span></td>
+            <td><span class="invite-code">GRDIRN-7F2X</span></td>
+            <td class="td-mono">Aug 2022</td>
+            <td>
+              <div class="row-actions">
+                <button class="action-btn ab-ghost">View</button>
+                <button class="action-btn ab-ghost">Members</button>
+                <button class="action-btn ab-red">Danger</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-name="Work League">
+            <td>
+              <div style="font-weight:600;">Work League</div>
+              <div style="font-size:11px;color:var(--text-3);">Private · Invite-only</div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;">SM</div>
+                <span>Sarah M.</span>
+              </div>
+            </td>
+            <td>
+              <div class="member-count"><span>8</span> players</div>
+            </td>
+            <td><span class="badge badge-active">2024 Season</span></td>
+            <td><span class="invite-code">GRDIRN-B9KP</span></td>
+            <td class="td-mono">Sep 2023</td>
+            <td>
+              <div class="row-actions">
+                <button class="action-btn ab-ghost">View</button>
+                <button class="action-btn ab-ghost">Members</button>
+                <button class="action-btn ab-red">Danger</button>
+              </div>
+            </td>
+          </tr>
+          <tr data-name="Family Picks">
+            <td>
+              <div style="font-weight:600;">Family Picks</div>
+              <div style="font-size:11px;color:var(--text-3);">Private · Invite-only</div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;color:#000;">RD</div>
+                <span>Rob D.</span>
+              </div>
+            </td>
+            <td>
+              <div class="member-count"><span>4</span> players</div>
+            </td>
+            <td><span class="badge badge-pending">No Active Season</span></td>
+            <td><span class="invite-code">GRDIRN-QV3Z</span></td>
+            <td class="td-mono">Oct 2024</td>
+            <td>
+              <div class="row-actions">
+                <button class="action-btn ab-ghost">View</button>
+                <button class="action-btn ab-green">Assign Season</button>
+                <button class="action-btn ab-red">Danger</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function toggleCreateForm() {
+    const form = document.getElementById('create-form');
+    form.classList.toggle('open');
+  }
+
+  let syncing = false;
+  function triggerSync() {
+    if (syncing) return;
+    syncing = true;
+    const btn = document.getElementById('sync-btn');
+    const season = document.getElementById('sync-season').value;
+    const week = document.getElementById('sync-week').value;
+    btn.innerHTML = '<span class="spinner"></span> Syncing…';
+    btn.classList.add('running');
+
+    const log = document.getElementById('log-panel');
+    const now = new Date();
+    const t = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+    setTimeout(() => {
+      const line1 = document.createElement('div');
+      line1.className = 'log-line';
+      line1.innerHTML = `<span class="log-time">${t}</span><span class="log-dim">  Sync triggered manually by admin</span>`;
+      log.prepend(line1);
+    }, 300);
+
+    setTimeout(() => {
+      const t2 = new Date();
+      const ts = `${t2.getHours()}:${String(t2.getMinutes()).padStart(2,'0')}:${String(t2.getSeconds()).padStart(2,'0')}`;
+      const line2 = document.createElement('div');
+      line2.className = 'log-line';
+      line2.innerHTML = `<span class="log-time">${ts}</span><span class="log-info">→ Fetching ESPN scoreboard: ${season.toLowerCase().replace(' ','=')} ${week.toLowerCase().replace(' ','=')}</span>`;
+      log.prepend(line2);
+    }, 900);
+
+    setTimeout(() => {
+      const t3 = new Date();
+      const ts = `${t3.getHours()}:${String(t3.getMinutes()).padStart(2,'0')}:${String(t3.getSeconds()).padStart(2,'0')}`;
+      const line3 = document.createElement('div');
+      line3.className = 'log-line';
+      line3.innerHTML = `<span class="log-time">${ts}</span><span class="log-ok">✓ ESPN sync complete — ${week} · 16 games imported</span>`;
+      log.prepend(line3);
+
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sync Week from ESPN';
+      btn.classList.remove('running');
+      syncing = false;
+    }, 2200);
+  }
+
+  function triggerBulkSync() {
+    if (!confirm('This will overwrite all existing game data for the selected season. Continue?')) return;
+    const log = document.getElementById('log-panel');
+    const now = new Date();
+    const t = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="log-time">${t}</span><span class="log-warn">⚠ Bulk season sync queued — this may take several minutes</span>`;
+    log.prepend(line);
+  }
+
+  function runFullSync() {
+    const log = document.getElementById('log-panel');
+    const now = new Date();
+    const t = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="log-time">${t}</span><span class="log-info">→ Full sync triggered from header — current week only</span>`;
+    log.prepend(line);
+    setTimeout(() => {
+      const t2 = new Date();
+      const ts = `${t2.getHours()}:${String(t2.getMinutes()).padStart(2,'0')}:${String(t2.getSeconds()).padStart(2,'0')}`;
+      const l2 = document.createElement('div');
+      l2.className = 'log-line';
+      l2.innerHTML = `<span class="log-time">${ts}</span><span class="log-ok">✓ Quick sync complete — Week 18 updated</span>`;
+      log.prepend(l2);
+    }, 1800);
+  }
+
+  function filterLeagues() {
+    const q = document.getElementById('league-search').value.toLowerCase();
+    document.querySelectorAll('#leagues-table tbody tr').forEach(row => {
+      const name = row.getAttribute('data-name') || '';
+      row.style.display = name.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  // Smooth section active state in nav
+  const sections = ['overview','seasons','sync','leagues'];
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= 80) current = id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>

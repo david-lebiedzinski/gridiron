@@ -4,6 +4,19 @@
    Import once. Use class names directly in JSX/HTML.
    ============================================================ */
 
+/* ── Utility ─────────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── Reset ───────────────────────────────────────────────── */
 *,
 *::before,
@@ -18,7 +31,24 @@ html {
 }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(
+      ellipse at 50% -10%,
+      rgba(245, 166, 35, 0.12) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 20% 80%,
+      rgba(0, 76, 84, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 90%,
+      rgba(36, 23, 115, 0.08) 0%,
+      transparent 50%
+    ),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -420,11 +450,8 @@ body {
 
 .table {
   width: 100%;
-  border-collapse: collapse;
-}
-
-.table thead tr {
-  border-bottom: 1px solid var(--border);
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .table th {
@@ -437,6 +464,7 @@ body {
   padding: 11px 16px;
   text-align: left;
   white-space: nowrap;
+  border-bottom: 1px solid var(--border);
 }
 
 /* Right-align numeric columns */
@@ -446,12 +474,11 @@ body {
 }
 
 .table tbody tr {
-  border-bottom: 1px solid var(--border);
   transition: background var(--transition);
 }
 
-.table tbody tr:last-child {
-  border-bottom: none;
+.table tbody tr:not(:last-child) td {
+  border-bottom: 1px solid var(--border);
 }
 .table tbody tr:hover {
   background: var(--bg-3);
@@ -540,6 +567,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  overflow: hidden;
   transition: border-color var(--transition);
 }
 
@@ -721,6 +749,7 @@ select option {
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  margin: 0px 8px;
   padding: 2px 8px;
 }
 
@@ -743,11 +772,16 @@ select option {
   gap: 0;
 }
 
+.nav-logo-emoji {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
 .nav-logo {
   font-family: var(--font-display);
   font-size: 22px;
   letter-spacing: 0.05em;
-  color: var(--text);
+  color: var(--accent);
   text-decoration: none;
   margin-right: 8px;
 }
@@ -767,23 +801,28 @@ select option {
 
 .nav-links {
   display: flex;
-  gap: 2px;
+  gap: 4px;
+  margin-left: auto;
 }
 
 .nav-links a {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--text-2);
+  font-family: var(--font-display);
+  text-transform: uppercase;
   text-decoration: none;
   padding: 6px 12px;
   border-radius: 6px;
   transition: all var(--transition);
+  letter-spacing: 0.05em;
 }
 
 .nav-links a:hover {
   background: var(--bg-3);
   color: var(--text);
 }
+
 .nav-links a.active {
   color: var(--accent);
   background: var(--accent-dim);
@@ -798,26 +837,35 @@ select option {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
+  border: 2px solid var(--accent);
+  font-size: 12px;
+  font-weight: 700;
   color: #fff;
   margin-left: 16px;
   cursor: pointer;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.nav-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* Page content wrapper */
 .page {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 24px 80px;
+  padding: 24px 24px;
+  min-height: calc(100vh - var(--nav-height));
 }
 
 /* Page header — eyebrow + title + optional action */
 .page-header {
-  margin-bottom: 32px;
+  margin-bottom: 12px;
   padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -1000,6 +1048,380 @@ select option {
   color: var(--text-3);
   max-width: 280px;
   margin: 0 auto;
+}
+
+/* ══════════════════════════════════════════════════════════
+   DIALOG (Radix UI)
+   ══════════════════════════════════════════════════════════ */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  animation: dialog-fade-in 0.15s ease;
+}
+
+.dialog-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  background: var(--bg-2);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  width: 90vw;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  animation: dialog-slide-in 0.15s ease;
+}
+
+.dialog-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: var(--space-1);
+}
+
+.dialog-description {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: var(--space-4);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: var(--space-4);
+}
+
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-slide-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SETTINGS FORM
+   ══════════════════════════════════════════════════════════ */
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.setting-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+input.setting-input-wide {
+  width: 240px;
+  flex-shrink: 0;
+}
+
+input.setting-input {
+  width: 80px;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.settings-section-header {
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-locked-banner {
+  padding: 10px 16px;
+  background: rgba(232, 93, 4, 0.06);
+  border-bottom: 1px solid rgba(232, 93, 4, 0.15);
+}
+
+/* ── Toggle switch ── */
+
+.toggle {
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  background: var(--bg-4);
+}
+
+.toggle.on {
+  background: var(--green);
+}
+
+.toggle:disabled {
+  cursor: not-allowed;
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s;
+}
+
+.toggle.on .toggle-knob {
+  left: 21px;
+}
+
+/* ── Danger zone ── */
+
+.danger-card {
+  border: 1px solid var(--red-border);
+}
+
+/* ── Invite code display ── */
+
+.invite-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.invite-code-row .code-pill {
+  flex: 1;
+}
+
+.invite-code-row .btn:first-of-type {
+  margin-left: auto;
+}
+
+/* ── Join code input ── */
+
+.join-code-input {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+/* ── Save actions footer ── */
+
+.card-footer-actions {
+  padding: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Transfer select row ── */
+
+.transfer-select-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── Small avatar (used in tables/lists) ── */
+
+.avatar-sm {
+  width: 26px;
+  height: 26px;
+  font-size: 10px;
+  margin-left: 0;
+}
+
+.avatar-md {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+  margin-left: 0;
+}
+
+.avatar-lg {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.avatar-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Team picker grid ── */
+
+.team-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+@media (min-width: 400px) {
+  .team-picker {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media (min-width: 700px) {
+  .team-picker {
+    grid-template-columns: repeat(11, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .team-picker {
+    grid-template-columns: repeat(16, 1fr);
+  }
+}
+
+.team-option {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--card2);
+  transition: all 0.15s;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 4px;
+}
+
+.team-option:hover {
+  border-color: #4a5568;
+  color: var(--text);
+}
+
+.team-option.selected {
+  border-width: 2px;
+  color: #fff;
+}
+
+.team-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── User cell (avatar + name inline) ── */
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   POPOVER (Radix UI)
+   ══════════════════════════════════════════════════════════ */
+
+.popover-content {
+  background: var(--bg-2);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  min-width: 200px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: dialog-fade-in 0.12s ease;
+  z-index: 200;
+}
+
+.popover-header {
+  padding: 4px 4px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.popover-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.popover-email {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.popover-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  transition: all var(--transition);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.popover-item:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+.popover-item.danger:hover {
+  color: var(--red);
 }
 
 /* ══════════════════════════════════════════════════════════
