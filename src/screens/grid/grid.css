@@ -1,0 +1,562 @@
+/* ============================================================
+   Picks Grid — Styles
+   ============================================================ */
+
+:root {
+  --me-color: #6aa3ff;
+}
+
+/* ── Table container ── */
+.grid-table-outer {
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: calc(100vh - 210px);
+}
+
+.grid-table-outer::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.grid-table-outer::-webkit-scrollbar-track {
+  background: transparent;
+}
+.grid-table-outer::-webkit-scrollbar-thumb {
+  background: var(--border-md);
+  border-radius: 2px;
+}
+
+/* ── Table ── */
+.picks-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 12px;
+}
+
+/* ── Game info columns — shrink to content ── */
+.game-col {
+  white-space: nowrap;
+  width: 1px;
+  padding: 12px 8px;
+  background: var(--bg-2);
+  vertical-align: middle;
+}
+
+/* ── Table header ── */
+.table-header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+}
+
+.table-header th {
+  padding: 8px 8px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--text-2);
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.table-header th.game-col {
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.table-header th.me-col {
+  color: var(--me-color);
+}
+
+/* ── Week group rows ── */
+.week-group {
+  position: sticky;
+  top: 35px;
+  z-index: 5;
+}
+
+.week-group td {
+  padding: 8px 10px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.week-group.current-week td {
+  color: #8a6a20;
+  background: #0c0b08;
+  border-color: #1a1608;
+}
+
+.week-group.playoff td {
+  color: var(--text-3);
+  background: #080c10;
+  border-left: 2px solid var(--text-3);
+}
+.week-group.superbowl td {
+  color: #8a7020;
+  background: #0a0904;
+  border-left: 2px solid rgba(181, 140, 12, 0.4);
+}
+.week-group.past td {
+  color: var(--text-3);
+}
+
+/* ── Game rows ── */
+.game-row {
+  transition: background 0.08s;
+}
+
+.game-row td {
+  border-bottom: 1px solid rgba(30, 39, 51, 0.4);
+}
+
+.game-row:hover {
+  background: rgba(255, 255, 255, 0.012);
+}
+.game-row.past {
+  opacity: 0.65;
+}
+.game-row.playoff td:first-child {
+  border-left: 2px solid var(--text-3);
+}
+.game-row.superbowl td:first-child {
+  border-left: 2px solid rgba(181, 140, 12, 0.4);
+}
+.game-row td {
+  padding: 8px 16px;
+  vertical-align: middle;
+}
+
+/* ── Game cell typography ── */
+.wk-cell {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wk-cell.current {
+  color: rgba(245, 166, 35, 0.6);
+}
+.wk-cell.superbowl {
+  color: rgba(181, 140, 12, 0.7);
+}
+
+.time-cell {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 300;
+}
+
+.matchup-cell {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.matchup-cell .away {
+  color: var(--text);
+}
+.matchup-cell .sep {
+  color: var(--text-3);
+  margin: 0 6px;
+  font-size: 11px;
+  vertical-align: middle;
+}
+.matchup-cell .home {
+  color: var(--text-2);
+}
+
+.score-cell {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 300;
+}
+
+.result-cell {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.result-cell.final {
+  color: var(--text);
+}
+.result-cell.live {
+  color: var(--accent);
+  animation: grid-blink 1.4s infinite;
+}
+.result-cell.open {
+  color: var(--green);
+}
+
+@keyframes grid-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ── Pick cell ── */
+.pick-cell {
+  text-align: center;
+  padding: 3px 2px !important;
+}
+
+/* ── Chip ── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 54px;
+  height: 28px;
+  border-radius: 3px;
+  padding: 0 6px;
+  position: relative;
+  transition:
+    transform 0.1s,
+    opacity 0.15s;
+  overflow: visible;
+  user-select: none;
+}
+
+.chip-abbr {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.chip-icon {
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.chip.correct {
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+}
+.chip.correct .chip-abbr {
+  color: #bbf7d0;
+}
+.chip.correct .chip-icon {
+  color: var(--green);
+}
+
+.chip.wrong {
+  background: var(--red-dim);
+  border: 1px solid var(--red-border);
+}
+.chip.wrong .chip-abbr {
+  color: #fca5a5;
+}
+.chip.wrong .chip-icon {
+  color: var(--red);
+}
+
+.chip.pending {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-md);
+}
+.chip.pending .chip-abbr {
+  color: var(--text-2);
+}
+.chip.pending .chip-icon {
+  color: var(--text-3);
+}
+
+.chip.live {
+  background: var(--accent-dim);
+  border: 1px solid rgba(245, 166, 35, 0.28);
+}
+.chip.live .chip-abbr {
+  color: #fde68a;
+}
+.chip.live .chip-icon {
+  color: var(--accent);
+  animation: grid-blink 1.2s infinite;
+}
+
+.chip.hidden {
+  background: var(--bg-3);
+  border: 1px dashed var(--border);
+  justify-content: center;
+}
+.chip.hidden .chip-abbr {
+  color: var(--text-3);
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.chip.hidden .chip-icon {
+  display: none;
+}
+
+.chip.empty {
+  background: transparent;
+  border: 1px solid var(--bg-3);
+  justify-content: center;
+}
+.chip.empty .chip-abbr {
+  color: var(--bg-4);
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.chip.empty .chip-icon {
+  display: none;
+}
+
+/* Editable chips */
+.chip.mine {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.chip.mine:hover {
+  transform: scale(1.06);
+  z-index: 20;
+}
+.chip.mine:active {
+  transform: scale(0.96);
+}
+.chip.mine.empty {
+  border: 1px dashed var(--border-md);
+}
+.chip.mine.empty .chip-abbr {
+  color: var(--text-3);
+}
+.chip.mine.locked {
+  cursor: default;
+}
+.chip.mine.locked:hover {
+  transform: none;
+}
+
+.chip.saving {
+  opacity: 0.6;
+  animation: grid-savePulse 0.4s ease;
+}
+@keyframes grid-savePulse {
+  0% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.chip.error {
+  animation: grid-shake 0.35s ease;
+}
+@keyframes grid-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+/* Bonus badge */
+.bonus-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Tooltip */
+.chip[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-3);
+  border: 1px solid var(--border-md);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 3px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 50;
+}
+.chip[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* Current week scroll anchor */
+.current-week-anchor {
+  scroll-margin-top: 120px;
+}
+
+/* ── Large screen ── */
+@media (min-width: 900px) {
+  .chip {
+    width: 58px;
+    height: 30px;
+    padding: 0 7px;
+  }
+  .chip-abbr {
+    font-size: 14px;
+  }
+  .chip-icon {
+    font-size: 10px;
+  }
+  .game-col {
+    padding: 6px 10px;
+  }
+}
+
+/* ── Legend ── */
+.grid-legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.legend-swatch {
+  width: 28px;
+  height: 16px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-family: var(--font-display);
+}
+
+.swatch-correct {
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+}
+.swatch-wrong {
+  background: var(--red-dim);
+  border: 1px solid var(--red-border);
+  color: var(--red);
+  opacity: 0.5;
+}
+.swatch-pending {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-md);
+  color: var(--text-3);
+}
+.swatch-hidden {
+  background: var(--bg-3);
+  border: 1px dashed var(--border);
+  color: var(--text-3);
+  font-size: 11px;
+}
+.swatch-bonus {
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-display);
+  font-size: 7px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.legend-hint {
+  font-size: 9px;
+  color: rgba(245, 166, 35, 0.5);
+}
+.legend-spacer {
+  margin-left: auto;
+}
+
+/* ── Toast ── */
+.grid-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--bg-3);
+  border: 1px solid var(--border-md);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  z-index: 500;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+  opacity: 0;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.grid-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.grid-toast.success {
+  border-color: var(--green-border);
+  color: var(--green);
+}
+.grid-toast.error {
+  border-color: var(--red-border);
+  color: var(--red);
+}
+.grid-toast.info {
+  border-color: rgba(245, 166, 35, 0.3);
+  color: var(--accent);
+}

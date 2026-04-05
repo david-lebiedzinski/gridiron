@@ -234,6 +234,13 @@ export const COMMISSIONER_MEMBERS = {
   confirmTransfer: (name: string) =>
     `Make ${name} the commissioner? You will become a regular member.`,
   confirmRegenCode: "Regenerate invite code? The old code will stop working.",
+  addMember: "Add Member",
+  addMemberTitle: "Add Member",
+  addMemberDesc: "Search for a user by username to add them to the league.",
+  searchPlaceholder: "Search username\u2026",
+  noResults: "No users found.",
+  add: "Add",
+  addedMember: (name: string) => `${name} added to the league.`,
 } as const;
 
 export const SETTINGS = {
@@ -302,4 +309,44 @@ export const DANGER_ZONE = {
   confirmDeleteTitle: "Delete league",
   confirmDelete:
     "Delete this league permanently? All seasons, picks, and member data will be lost.",
+} as const;
+
+/* ── Picks Grid ──────────────────────────────────────────────── */
+
+export const GRID = {
+  eyebrow: "Season",
+  title: "Picks Grid",
+  subtitle: "View and make your picks across the entire season.",
+
+  legendCorrect: "Correct",
+  legendWrong: "Wrong",
+  legendPending: "Pending",
+  legendHidden: "Hidden",
+  legendSoleBonus: "Sole bonus",
+  legendTapHint: "TAP YOUR CELLS TO PICK",
+
+  colWk: "Wk",
+  colTime: "Date",
+  colMatchup: "Matchup",
+  colScore: "Score",
+  colResult: "Status",
+  colGame: "Game",
+  colSeasonPts: "SEASON PTS",
+  colPts: "PTS",
+
+  statusFinal: "Final",
+  statusLive: "\u25CF Live",
+  statusOpen: "Open",
+
+  headerYou: "You",
+  ptsSuffix: "pts",
+
+  toastPicked: (team: string) => `${team} picked`,
+  toastCleared: "Pick cleared",
+  toastError: "Failed to save pick. Try again.",
+
+  emptyNoSeason: "No active season.",
+  emptyLoading: "Loading picks\u2026",
+
+  sectionTitle: "Season Picks",
 } as const;

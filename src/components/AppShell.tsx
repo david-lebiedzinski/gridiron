@@ -29,7 +29,7 @@ export default function AppShell() {
         <LeagueSelector />
 
         <div className="nav-links">
-          <NavLink to="/picks">{NAV.picks}</NavLink>
+          <NavLink to="/grid">{NAV.picks}</NavLink>
           <NavLink to="/leaderboard">{NAV.leaderboard}</NavLink>
           <NavLink to="/analytics">{NAV.analytics}</NavLink>
           <NavLink to="/profile">{NAV.profile}</NavLink>

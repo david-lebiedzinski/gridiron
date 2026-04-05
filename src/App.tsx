@@ -13,6 +13,7 @@ import AppShell from "./components/AppShell";
 import AdminPage from "./screens/Admin";
 import CommissionerPage from "./screens/Commissioner";
 import ProfilePage from "./screens/Profile";
+import GridScreen from "./screens/Grid";
 
 // ─── Placeholder screens (replace as you build each one) ─────
 
@@ -21,16 +22,6 @@ function PicksScreen() {
     <div className="flex items-center justify-center min-h-screen">
       <p className="text-[var(--muted)] font-[Oswald] text-lg">
         Picks — coming soon
-      </p>
-    </div>
-  );
-}
-
-function GridScreen() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p className="text-[var(--muted)] font-[Oswald] text-lg">
-        Grid — coming soon
       </p>
     </div>
   );

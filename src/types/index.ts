@@ -33,7 +33,8 @@ export interface LeagueSeason {
   name: string;
   is_active: boolean;
   locked: boolean;
-  nfl_seasons: { year: number };
+  nfl_season_id: string;
+  nfl_seasons: { id: string; year: number };
 }
 
 export interface LeagueMembership {
@@ -69,6 +70,7 @@ export interface SeasonSettings {
   weekly_bonus_scales: boolean;
   tiebreaker_superbowl_pred: boolean;
   tiebreaker_playoff_pts: boolean;
+  picks_visible_before_kickoff: boolean;
   stats_public_default?: boolean;
 }
 

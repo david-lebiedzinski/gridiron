@@ -19,7 +19,7 @@
 
 /* ── Reset ───────────────────────────────────────────────── */
 *,
-*::before,
+f *::before,
 *::after {
   box-sizing: border-box;
   margin: 0;
@@ -864,7 +864,6 @@ select option {
 
 /* Page header — eyebrow + title + optional action */
 .page-header {
-  margin-bottom: 12px;
   padding-bottom: 24px;
   display: flex;
   align-items: flex-end;
@@ -874,7 +873,7 @@ select option {
 
 /* Section — a titled group of related content */
 .section {
-  margin-bottom: 44px;
+  margin-bottom: 0px;
 }
 
 .section-header {
@@ -1236,6 +1235,29 @@ input.setting-input {
 
 .invite-code-row .btn:first-of-type {
   margin-left: auto;
+}
+
+/* ── Search results ── */
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.search-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.search-result-row:hover {
+  background: var(--bg-3);
 }
 
 /* ── Join code input ── */

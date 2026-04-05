@@ -35,7 +35,8 @@ export async function getUserLeagues(
           name,
           is_active,
           locked,
-          nfl_seasons ( year )
+          nfl_season_id,
+          nfl_seasons ( id, year )
         )
       )
     `,
@@ -127,6 +128,48 @@ export async function deleteLeague(leagueId: string) {
     .eq("id", leagueId);
 
   if (error) throw error;
+}
+
+// ─── Search Profiles ─────────────────────────────────────────
+
+export async function searchProfiles(
+  query: string,
+  excludeLeagueId: string,
+) {
+  // Find profiles matching the query that are NOT already in the league
+  const { data: existing } = await supabase
+    .from("league_members")
+    .select("user_id")
+    .eq("league_id", excludeLeagueId);
+
+  const existingIds = new Set((existing ?? []).map((m) => m.user_id));
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, avatar_color")
+    .ilike("username", `%${query}%`)
+    .limit(10);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).filter((p) => !existingIds.has(p.id));
+}
+
+// ─── Add Member to League ────────────────────────────────────
+
+export async function addMemberToLeague(
+  leagueId: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("league_members")
+    .insert({ league_id: leagueId, user_id: userId, role: "member" });
+
+  if (error) {
+    throw error;
+  }
 }
 
 // ─── Get All Profiles (super admin) ───────────────────────────
