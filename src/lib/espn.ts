@@ -1,174 +1,226 @@
-import { supabase } from "./supabase";
-import type { ESPNGame } from "../types";
+import { supabase } from "./client";
+import type {
+  GameInsert,
+  GameUpdate,
+  ESPNCompetitor,
+  ESPNEvent,
+} from "./types";
 
 const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
 
-// Re-export for consumers
-export type { ESPNGame };
+// ─── Status mapping ──────────────────────────────────────────
 
-// ─── ESPN Event Shape (untyped API response) ─────────────────
+const STATUS_MAP: Record<string, string> = {
+  STATUS_SCHEDULED: "scheduled",
+  STATUS_IN_PROGRESS: "in_progress",
+  STATUS_HALFTIME: "halftime",
+  STATUS_FINAL: "final",
+  STATUS_END_PERIOD: "in_progress",
+};
 
-interface ESPNCompetitor {
-  homeAway: string;
-  winner?: boolean;
-  score?: string;
-  team: {
-    abbreviation: string;
-    displayName: string;
-    logo: string;
-    color: string;
-    alternateColor: string;
-  };
+function mapStatus(espnStatus: string): string {
+  return STATUS_MAP[espnStatus] ?? "scheduled";
 }
 
-interface ESPNEvent {
-  id: string;
-  date: string;
-  status: {
-    type: { name: string };
-    period?: number;
-    displayClock?: string;
-  };
-  competitions: {
-    competitors: ESPNCompetitor[];
-    odds?: { details: string; overUnder: number }[];
-    situation?: {
-      possessionText?: string;
-      downDistanceText?: string;
-      lastPlay?: { text: string };
-      isRedZone?: boolean;
-    };
-  }[];
+// ─── Team ID lookup ──────────────────────────────────────────
+
+async function loadTeamMap(): Promise<Map<string, string>> {
+  const { data, error } = await supabase.from("team").select("id, abbr");
+
+  if (error) {
+    throw error;
+  }
+
+  const map = new Map<string, string>();
+  for (const t of data) {
+    map.set(t.abbr, t.id);
+  }
+  return map;
 }
 
-// ─── Fetch Week Schedule ──────────────────────────────────────
+// ─── Fetch week schedule from ESPN ───────────────────────────
 
 export async function fetchWeekSchedule(
   year: number,
   week: number,
   seasonType: "regular" | "post" = "regular",
-): Promise<ESPNGame[]> {
+): Promise<ESPNEvent[]> {
   const espnSeasonType = seasonType === "post" ? 3 : 2;
   const res = await fetch(
     `${ESPN_BASE}/scoreboard?year=${year}&week=${week}&seasontype=${espnSeasonType}`,
   );
 
-  if (!res.ok) throw new Error(`ESPN API error: ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`ESPN API error: ${res.status}`);
+  }
+
   const data = await res.json();
-
-  return (data.events ?? []).map(parseESPNEvent);
+  return data.events ?? [];
 }
 
-// ─── Fetch Single Game ────────────────────────────────────────
-
-export async function fetchSingleGame(espnGameId: string): Promise<ESPNGame> {
-  const res = await fetch(`${ESPN_BASE}/summary?event=${espnGameId}`);
-  if (!res.ok) throw new Error(`ESPN API error: ${res.status}`);
-  const data = await res.json();
-
-  const event: ESPNEvent = {
-    id: espnGameId,
-    date: data.header.competitions[0].date,
-    status: data.header.competitions[0].status,
-    competitions: [data.header.competitions[0]],
-  };
-
-  return parseESPNEvent(event);
-}
-
-// ─── Parse ESPN Event ─────────────────────────────────────────
-
-function parseESPNEvent(event: ESPNEvent): ESPNGame {
-  const competition = event.competitions[0];
-  const home = competition.competitors.find((c) => c.homeAway === "home")!;
-  const away = competition.competitors.find((c) => c.homeAway === "away")!;
-  const odds = competition.odds?.[0] ?? null;
-  const situation = competition.situation ?? null;
-  const status = event.status.type.name;
-
-  const favoriteAbbr = odds ? parseFavorite(odds.details) : null;
-  const winner =
-    status === "STATUS_FINAL"
-      ? (competition.competitors.find((c) => c.winner)?.team.abbreviation ??
-        null)
-      : null;
-
-  return {
-    espnGameId: event.id,
-    kickoffTime: event.date,
-    homeTeam: home.team.displayName,
-    homeAbbr: home.team.abbreviation,
-    homeLogo: home.team.logo,
-    homeColor: `#${home.team.color}`,
-    homeAltColor: `#${home.team.alternateColor}`,
-    awayTeam: away.team.displayName,
-    awayAbbr: away.team.abbreviation,
-    awayLogo: away.team.logo,
-    awayColor: `#${away.team.color}`,
-    awayAltColor: `#${away.team.alternateColor}`,
-    spread: odds?.details ?? null,
-    overUnder: odds?.overUnder ?? null,
-    favoriteAbbr,
-    status,
-    winner,
-    period: event.status.period,
-    displayClock: event.status.displayClock,
-    homeScore: home.score,
-    awayScore: away.score,
-    possession: situation?.possessionText,
-    downDistance: situation?.downDistanceText,
-    lastPlay: situation?.lastPlay?.text,
-    isRedZone: situation?.isRedZone ?? false,
-  };
-}
-
-// ─── Parse Spread ─────────────────────────────────────────────
-
-function parseFavorite(details: string | null): string | null {
-  if (!details || details === "EVEN") return null;
-  const match = details.match(/^([A-Z]+)\s+[-][\d.]+$/);
-  return match ? match[1] : null;
-}
-
-export function isUpset(spread: string | null, winnerAbbr: string): boolean {
-  if (!spread || spread === "EVEN") return false;
-  const favorite = parseFavorite(spread);
-  if (!favorite) return false;
-  return winnerAbbr !== favorite;
-}
-
-// ─── Sync Week Games to Supabase ──────────────────────────────
+// ─── Sync a week's games to Supabase ─────────────────────────
 
 export async function syncWeekGames(
+  seasonId: string,
   weekId: string,
   year: number,
   weekNumber: number,
   seasonType: "regular" | "post",
 ): Promise<number> {
-  const espnGames = await fetchWeekSchedule(year, weekNumber, seasonType);
+  const [events, teamMap] = await Promise.all([
+    fetchWeekSchedule(year, weekNumber, seasonType),
+    loadTeamMap(),
+  ]);
 
-  for (const game of espnGames) {
-    await supabase.from("games").upsert(
-      {
-        week_id: weekId,
-        espn_game_id: game.espnGameId,
-        home_team: game.homeTeam,
-        home_abbr: game.homeAbbr,
-        away_team: game.awayTeam,
-        away_abbr: game.awayAbbr,
-        spread: game.spread,
-        kickoff_time: game.kickoffTime,
-        winner_abbr: game.winner,
-      },
-      { onConflict: "espn_game_id" },
-    );
+  const games: GameInsert[] = events.map((event) => {
+    const comp = event.competitions[0];
+    const home = comp.competitors.find((c) => c.homeAway === "home")!;
+    const away = comp.competitors.find((c) => c.homeAway === "away")!;
+    const odds = comp.odds?.[0] ?? null;
+    const status = mapStatus(event.status.type.name);
+
+    const homeTeamId = teamMap.get(home.team.abbreviation);
+    const awayTeamId = teamMap.get(away.team.abbreviation);
+
+    if (!homeTeamId || !awayTeamId) {
+      throw new Error(
+        `Unknown team: ${home.team.abbreviation} or ${away.team.abbreviation}`,
+      );
+    }
+
+    const winnerId =
+      status === "final"
+        ? (teamMap.get(
+            comp.competitors.find((c) => c.winner)?.team.abbreviation ?? "",
+          ) ?? null)
+        : null;
+
+    const spread = odds ? parseSpread(odds.details) : null;
+
+    return {
+      season_id: seasonId,
+      week_id: weekId,
+      espn_game_id: event.id,
+      home_team_id: homeTeamId,
+      away_team_id: awayTeamId,
+      kickoff_time: event.date,
+      status,
+      home_score: home.score != null ? Number(home.score) : 0,
+      away_score: away.score != null ? Number(away.score) : 0,
+      spread,
+      winner_id: winnerId,
+    };
+  });
+
+  const { error } = await supabase
+    .from("game")
+    .upsert(games, { onConflict: "espn_game_id" });
+
+  if (error) {
+    throw error;
   }
 
-  return espnGames.length;
+  return games.length;
 }
 
-// ─── Logo URL Helper ──────────────────────────────────────────
+// ─── Update live state for active games ──────────────────────
 
-export function getTeamLogoUrl(abbr: string): string {
-  return `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr.toLowerCase()}.png`;
+export async function syncLiveGameState(seasonId: string): Promise<number> {
+  const { data: activeGames, error: fetchError } = await supabase
+    .from("game")
+    .select("espn_game_id")
+    .eq("season_id", seasonId)
+    .in("status", ["scheduled", "in_progress", "halftime"]);
+
+  if (fetchError) {
+    throw fetchError;
+  }
+  if (!activeGames || activeGames.length === 0) {
+    return 0;
+  }
+
+  const teamMap = await loadTeamMap();
+  let updated = 0;
+
+  for (const row of activeGames) {
+    try {
+      const res = await fetch(`${ESPN_BASE}/summary?event=${row.espn_game_id}`);
+      if (!res.ok) {
+        continue;
+      }
+
+      const data = await res.json();
+      const comp = data.header.competitions[0];
+      const home = comp.competitors.find(
+        (c: ESPNCompetitor) => c.homeAway === "home",
+      )!;
+      const away = comp.competitors.find(
+        (c: ESPNCompetitor) => c.homeAway === "away",
+      )!;
+      const situation = data.situation ?? null;
+      const status = mapStatus(comp.status.type.name);
+
+      const winnerId =
+        status === "final"
+          ? (teamMap.get(
+              comp.competitors.find((c: ESPNCompetitor) => c.winner)?.team
+                .abbreviation ?? "",
+            ) ?? null)
+          : null;
+
+      const possessionAbbr = situation?.possessionText ?? null;
+      const possessionId = possessionAbbr
+        ? (teamMap.get(possessionAbbr) ?? null)
+        : null;
+
+      const updates: GameUpdate = {
+        status,
+        home_score: home.score != null ? Number(home.score) : 0,
+        away_score: away.score != null ? Number(away.score) : 0,
+        period: comp.status.period ?? null,
+        display_clock: comp.status.displayClock ?? null,
+        possession_id: possessionId,
+        down_distance: situation?.downDistanceText ?? null,
+        last_play: situation?.lastPlay?.text ?? null,
+        is_red_zone: situation?.isRedZone ?? false,
+        winner_id: winnerId,
+      };
+
+      const { error } = await supabase
+        .from("game")
+        .update(updates)
+        .eq("espn_game_id", row.espn_game_id);
+
+      if (!error) {
+        updated++;
+      }
+    } catch {
+      // Skip individual game failures
+    }
+  }
+
+  return updated;
+}
+
+// ─── Spread parsing ──────────────────────────────────────────
+
+function parseSpread(details: string | null): number | null {
+  if (!details || details === "EVEN") {
+    return null;
+  }
+  const match = details.match(/[-]?([\d.]+)$/);
+  return match ? parseFloat(match[0]) : null;
+}
+
+export function isUpset(
+  spread: number | null,
+  winnerAbbr: string,
+  homeAbbr: string,
+): boolean {
+  if (spread == null) {
+    return false;
+  }
+  const favoredIsHome = spread < 0;
+  const winnerIsHome = winnerAbbr === homeAbbr;
+  return favoredIsHome !== winnerIsHome;
 }

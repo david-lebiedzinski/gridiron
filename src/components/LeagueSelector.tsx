@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { useApp } from "../context/context";
 import { joinLeagueByCode } from "../lib/leagues";
-import { APP, LEAGUE_SELECTOR } from "../strings";
+import { APP, LEAGUE_SELECTOR } from "../locales/en";
 import FormDialog from "./FormDialog";
 import type { League, LeagueMembership } from "../types";
 
@@ -52,7 +52,9 @@ export default function LeagueSelector() {
       setJoinDialogOpen(false);
       await refreshLeagues();
     } catch (err) {
-      setJoinError(err instanceof Error ? err.message : LEAGUE_SELECTOR.invalidCode);
+      setJoinError(
+        err instanceof Error ? err.message : LEAGUE_SELECTOR.invalidCode,
+      );
     }
   }
 

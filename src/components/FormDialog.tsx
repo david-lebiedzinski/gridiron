@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { APP } from "../strings";
+import { APP } from "../locales/en";
 
 interface FormDialogProps {
   open: boolean;
@@ -39,7 +39,11 @@ export default function FormDialog({
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="dialog-overlay" />
-        <Dialog.Content className={wide ? "dialog-content dialog-content-wide" : "dialog-content"}>
+        <Dialog.Content
+          className={
+            wide ? "dialog-content dialog-content-wide" : "dialog-content"
+          }
+        >
           <Dialog.Title className="dialog-title">{title}</Dialog.Title>
           {descriptionEl}
           {children}

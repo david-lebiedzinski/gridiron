@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { useApp } from "../context/context";
 import { signOut } from "../lib/auth";
-import { APP } from "../strings";
+import { APP } from "../locales/en";
 
 export default function AvatarMenu() {
   const { user, profile } = useApp();
@@ -28,20 +28,13 @@ export default function AvatarMenu() {
         </div>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content
-          className="popover-content"
-          sideOffset={8}
-          align="end"
-        >
+        <Popover.Content className="popover-content" sideOffset={8} align="end">
           <div className="popover-header">
             <div className="popover-name">{username}</div>
             <div className="popover-email">{user?.email}</div>
           </div>
           <Popover.Close asChild>
-            <button
-              className="popover-item danger"
-              onClick={handleSignOut}
-            >
+            <button className="popover-item danger" onClick={handleSignOut}>
               {APP.signOut}
             </button>
           </Popover.Close>

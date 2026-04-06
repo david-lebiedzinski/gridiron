@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useApp } from "../context/context";
-import { APP, NAV } from "../strings";
+import { APP, NAV } from "../locales/en";
 import LeagueSelector from "./LeagueSelector";
 import AvatarMenu from "./AvatarMenu";
 

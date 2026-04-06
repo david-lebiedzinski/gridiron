@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
-import { APP } from "../strings";
+import { APP } from "../locales/en";
 
 interface ConfirmDialogProps {
   trigger: ReactNode;
@@ -27,8 +27,7 @@ export default function ConfirmDialog({
     setOpen(false);
   }
 
-  const btnClass =
-    variant === "danger" ? "btn btn-danger" : "btn btn-primary";
+  const btnClass = variant === "danger" ? "btn btn-danger" : "btn btn-primary";
 
   return (
     <AlertDialog.Root open={open} onOpenChange={setOpen}>
