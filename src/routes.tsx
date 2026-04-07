@@ -15,6 +15,7 @@ import {
   GameDetail,
 } from "@/pages/admin";
 import { NotFoundPage } from "@/pages/error";
+import GridPage from "@/pages/grid/grid-page";
 
 const routes: RouteObject[] = [
   // ── Guest only ──
@@ -63,8 +64,8 @@ const routes: RouteObject[] = [
     children: [
       { path: "/leaderboard", element: <div>Leaderboard Page</div> },
       { index: true, element: <Navigate to="/picks" replace /> },
-      { path: "/picks", element: <div>Picks Page</div> },
-      { path: "/grid", element: <div>Grid Page</div> },
+      { path: "/picks", element: <GridPage /> },
+      { path: "/grid", element: <GridPage /> },
       {
         element: <AdminGuard />,
         children: [

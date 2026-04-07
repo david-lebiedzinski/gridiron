@@ -28,15 +28,15 @@ export async function getPicksByGame(
 
 // ─── Get picks for a league + season ─────────────────────────
 
-export async function getPicksBySeason(
+export async function getPicksByLeagueSeason(
   leagueId: string,
   seasonId: string,
 ): Promise<Pick[]> {
   const { data, error } = await supabase
     .from("pick")
-    .select("*, game!inner(season_id)")
+    .select("*, game!inner(week!inner(season_id))")
     .eq("league_id", leagueId)
-    .eq("game.season_id", seasonId);
+    .eq("game.week.season_id", seasonId);
 
   if (error) {
     throw error;

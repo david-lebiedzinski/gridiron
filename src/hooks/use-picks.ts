@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getPicksByGame,
-  getPicksBySeason,
+  getPicksByLeagueSeason,
   getUserPicks,
   upsertPick,
   deletePick,
@@ -28,10 +28,10 @@ export function usePicksByGame(leagueId: string, gameId: string) {
   });
 }
 
-export function usePicksBySeason(leagueId: string, seasonId: string) {
+export function usePicksByLeagueSeason(leagueId: string, seasonId: string) {
   return useQuery({
     queryKey: KEYS.bySeason(leagueId, seasonId),
-    queryFn: () => getPicksBySeason(leagueId, seasonId),
+    queryFn: () => getPicksByLeagueSeason(leagueId, seasonId),
     enabled: !!leagueId && !!seasonId,
   });
 }

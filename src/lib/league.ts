@@ -40,7 +40,7 @@ export async function getLeagueByInviteCode(
   const { data, error } = await supabase
     .from("league")
     .select("*")
-    .eq("invite_code", code)
+    .eq("invite_code", code.toLowerCase())
     .single();
 
   if (error && error.code !== "PGRST116") {
