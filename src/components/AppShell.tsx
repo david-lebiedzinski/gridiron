@@ -1,20 +1,15 @@
 import type { ReactNode } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { useApp } from "../context/context";
-import { APP, NAV } from "../locales/en";
+import { useProfile } from "@/hooks/use-profile";
+import { APP, NAV } from "@/locales/en";
 import LeagueSelector from "./LeagueSelector";
 import AvatarMenu from "./AvatarMenu";
 
 export default function AppShell() {
-  const { activeRole, profile } = useApp();
-
-  let commissionerLink: ReactNode = undefined;
-  if (activeRole === "commissioner") {
-    commissionerLink = <NavLink to="/commissioner">{NAV.league}</NavLink>;
-  }
+  const { data: profile } = useProfile();
 
   let adminLink: ReactNode = undefined;
-  if (profile?.is_super_admin) {
+  if (profile?.is_admin) {
     adminLink = <NavLink to="/admin">{NAV.admin}</NavLink>;
   }
 
@@ -22,18 +17,17 @@ export default function AppShell() {
     <>
       <nav className="nav">
         <NavLink to="/" className="nav-logo">
-          <span className="nav-logo-emoji">🏈</span>
+          <span className="nav-logo-emoji">{"\uD83C\uDFC8"}</span>
           {APP.name}
         </NavLink>
 
         <LeagueSelector />
 
         <div className="nav-links">
-          <NavLink to="/grid">{NAV.picks}</NavLink>
+          <NavLink to="/grid">{NAV.grid}</NavLink>
+          <NavLink to="/picks">{NAV.picks}</NavLink>
           <NavLink to="/leaderboard">{NAV.leaderboard}</NavLink>
-          <NavLink to="/analytics">{NAV.analytics}</NavLink>
-          <NavLink to="/profile">{NAV.profile}</NavLink>
-          {commissionerLink}
+
           {adminLink}
         </div>
 

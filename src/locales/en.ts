@@ -88,7 +88,8 @@ export const ONBOARDING = {
 /* ── Waiting ──────────────────────────────────────────────── */
 
 export const WAITING = {
-  signOut: "Sign out",
+  signOutPrefix: "Still waiting for a code?",
+  signOutAction: "Sign out",
   icon: "\u23F3",
   title: "You're in the system",
   body: "Your account is all set. Now you just need an invite code from your league commissioner to start picking.",
@@ -96,6 +97,22 @@ export const WAITING = {
   joinButton: "JOIN LEAGUE",
   joinSuccess: (name: string) => `Joined ${name}!`,
   joinError: "Invalid invite code. Please try again.",
+} as const;
+
+/* ── Error Pages ─────────────────────────────────────────── */
+
+export const ERROR = {
+  notFoundIcon: "🏟️",
+  notFoundTitle: "Page Not Found",
+  notFoundBody: "The page you're looking for doesn't exist or has been moved.",
+  forbiddenIcon: "🚫",
+  forbiddenTitle: "Access Denied",
+  forbiddenBody: "You don't have permission to view this page.",
+  crashIcon: "💥",
+  crashTitle: "Something Went Wrong",
+  crashBody: "An unexpected error occurred. Try refreshing the page.",
+  backHome: "Back to Home",
+  refresh: "Refresh Page",
 } as const;
 
 /* ── Nav / AppShell ───────────────────────────────────────── */
@@ -106,6 +123,7 @@ export const NAV = {
   analytics: "Analytics",
   profile: "Profile",
   commissioner: "Commissioner",
+  grid: "Grid",
   league: "League",
   admin: "Admin",
 } as const;
@@ -126,6 +144,8 @@ export const ADMIN = {
   eyebrow: "Admin",
   title: "Command Center",
   subtitle: "Manage leagues, seasons, and members.",
+  syncButton: "Sync from ESPN",
+  syncing: "Syncing\u2026",
 } as const;
 
 export const ADMIN_SEASONS = {
@@ -143,6 +163,15 @@ export const ADMIN_SEASONS = {
   confirmStart: (year: number) =>
     `Start the ${year} season? This will archive the current season and roll all leagues forward.`,
   confirmStartButton: (year: number) => `Start ${year}`,
+  colDateRange: "Dates",
+  createButton: "+ Create Season",
+  dialogTitle: "New Season",
+  dialogDesc: "Create a new NFL season.",
+  createSubmit: "Create Season",
+  yearLabel: "Year",
+  startDateLabel: "Start Date",
+  endDateLabel: "End Date",
+  backToAdmin: "\u2190 Back to Admin",
 } as const;
 
 export const ADMIN_LEAGUES = {
@@ -160,6 +189,41 @@ export const ADMIN_LEAGUES = {
   emptyState: "No leagues yet. Create one to get started.",
   regenCode: "Regen Code",
   confirmDelete: "Delete this league? This cannot be undone.",
+
+  /* ── Detail page ── */
+  backToAdmin: "\u2190 Back to Admin",
+  settingsTitle: "Settings",
+  membersTitle: "Members",
+  dangerTitle: "Danger Zone",
+  colMember: "Member",
+  colUserId: "User ID",
+  emptyMembers: "No members yet.",
+  inviteCodeLabel: "Invite Code",
+  copied: "Copied!",
+  copyCode: "Copy",
+  saveSettings: "Save Settings",
+  savingSettings: "Saving\u2026",
+  deleteLeague: "Delete League",
+  deleteLeagueDesc:
+    "Permanently delete this league and all associated data. This cannot be undone.",
+  confirmDeleteTitle: "Delete League",
+
+  /* ── Scoring fields ── */
+  scoringTitle: "Scoring Rules",
+  baseCorrectPts: "Base Correct Pts",
+  upsetMultiplier: "Upset Multiplier",
+  soleCorrectBonus: "Sole Correct Bonus",
+  playoffTitle: "Playoff Multipliers",
+  wildcardMultiplier: "Wildcard",
+  divisionalMultiplier: "Divisional",
+  championshipMultiplier: "Championship",
+  superbowlMultiplier: "Super Bowl",
+  bonusTitle: "Weekly Bonus",
+  weeklyBonusRegular: "Bonus Points",
+  weeklyBonusScales: "Bonus Scales with Streak",
+  visibilityTitle: "Visibility",
+  picksVisibleBeforeKickoff: "Picks Visible Before Kickoff",
+  statsPublicDefault: "Stats Public by Default",
 } as const;
 
 export const ADMIN_MEMBERS = {
@@ -354,6 +418,8 @@ export const ADMIN_GAME_EDITOR = {
   emptyWeek: "No games in this week.",
   confirmReset: "Reset this game to scheduled defaults?",
   confirmResetTitle: "Reset Game State",
+  syncButton: "Sync Games from ESPN",
+  syncing: "Syncing\u2026",
 } as const;
 
 /* ── Picks Grid ──────────────────────────────────────────────── */

@@ -1,36 +1,39 @@
 import type { ReactNode } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { useApp } from "../context/context";
-import { signOut } from "../lib/auth";
-import { APP } from "../locales/en";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/auth";
+import { useProfile } from "@/hooks/use-profile";
+import { APP } from "@/locales/en";
 
 export default function AvatarMenu() {
-  const { user, profile } = useApp();
-  const { avatar_url, avatar_color, username } = profile ?? {};
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { data: profile } = useProfile();
 
-  function handleSignOut() {
-    signOut();
+  async function handleSignOut() {
+    await logout();
+    navigate("/login");
   }
 
-  let avatarContent: ReactNode = username?.slice(0, 2).toUpperCase() ?? "?";
-  if (avatar_url) {
-    avatarContent = <img src={avatar_url} alt="Avatar" />;
+  const displayName = profile?.name ?? APP.fallbackUsername;
+  const initials = displayName.slice(0, 2).toUpperCase();
+
+  let avatarContent: ReactNode = initials;
+  if (profile?.avatar) {
+    avatarContent = <img src={profile.avatar} alt="Avatar" />;
   }
 
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <div
-          className="nav-avatar"
-          style={{ borderColor: avatar_color || "var(--accent)" }}
-        >
+        <div className="nav-avatar">
           {avatarContent}
         </div>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className="popover-content" sideOffset={8} align="end">
           <div className="popover-header">
-            <div className="popover-name">{username}</div>
+            <div className="popover-name">{displayName}</div>
             <div className="popover-email">{user?.email}</div>
           </div>
           <Popover.Close asChild>

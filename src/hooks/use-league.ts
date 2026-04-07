@@ -10,6 +10,7 @@ import {
   getLeagueMembers,
   joinLeague,
   leaveLeague,
+  regenerateInviteCode,
 } from "../lib/league";
 import type { LeagueInsert, LeagueUpdate } from "../lib/types";
 
@@ -105,5 +106,16 @@ export function useLeaveLeague() {
       leaveLeague(leagueId, userId),
     onSuccess: (_, { leagueId }) =>
       qc.invalidateQueries({ queryKey: KEYS.members(leagueId) }),
+  });
+}
+
+export function useRegenerateInviteCode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => regenerateInviteCode(id),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: KEYS.detail(data.id) });
+    },
   });
 }

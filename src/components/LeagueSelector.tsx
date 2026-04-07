@@ -1,23 +1,23 @@
 import { useState } from "react";
-import type { ReactNode } from "react";
+import type { ReactNode, ChangeEvent, KeyboardEvent } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { useApp } from "../context/context";
-import { joinLeagueByCode } from "../lib/leagues";
-import { APP, LEAGUE_SELECTOR } from "../locales/en";
+import { useAuth } from "@/context/auth";
+import { useLeagueContext } from "@/context/league";
+import { useUserLeagues, useJoinLeague } from "@/hooks/use-league";
+import { getLeagueByInviteCode } from "@/lib/league";
+import { APP, LEAGUE_SELECTOR } from "@/locales/en";
+import type { League } from "@/lib/types";
 import FormDialog from "./FormDialog";
-import type { League, LeagueMembership } from "../types";
 
 interface LeagueRowProps {
-  membership: LeagueMembership;
+  league: League;
   isActive: boolean;
-  onSelect: (league: League) => void;
+  onSelect: (id: string) => void;
 }
 
-function LeagueRow({ membership, isActive, onSelect }: LeagueRowProps) {
-  const league = membership.leagues;
-
+function LeagueRow({ league, isActive, onSelect }: LeagueRowProps) {
   function handleClick() {
-    onSelect(league);
+    onSelect(league.id);
   }
 
   return (
@@ -34,23 +34,35 @@ function LeagueRow({ membership, isActive, onSelect }: LeagueRowProps) {
 }
 
 export default function LeagueSelector() {
-  const { memberships, activeLeague, setActiveLeague, refreshLeagues } =
-    useApp();
+  const { user } = useAuth();
+  const { activeLeagueId, setActiveLeagueId } = useLeagueContext();
+  const { data: leagues } = useUserLeagues(user?.id ?? "");
+  const joinLeague = useJoinLeague();
 
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState("");
 
+  const activeLeague = (leagues ?? []).find((l) => l.id === activeLeagueId);
+
   async function handleJoin() {
-    if (joinCode.length < 4) {
+    if (joinCode.length < 4 || !user) {
       return;
     }
     setJoinError("");
     try {
-      await joinLeagueByCode(joinCode);
+      const league = await getLeagueByInviteCode(joinCode);
+      if (!league) {
+        setJoinError(LEAGUE_SELECTOR.invalidCode);
+        return;
+      }
+      await joinLeague.mutateAsync({
+        leagueId: league.id,
+        userId: user.id,
+      });
       setJoinCode("");
       setJoinDialogOpen(false);
-      await refreshLeagues();
+      setActiveLeagueId(league.id);
     } catch (err) {
       setJoinError(
         err instanceof Error ? err.message : LEAGUE_SELECTOR.invalidCode,
@@ -70,14 +82,18 @@ export default function LeagueSelector() {
     setJoinDialogOpen(true);
   }
 
-  function handleCodeChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleCodeChange(e: ChangeEvent<HTMLInputElement>) {
     setJoinCode(e.target.value.toUpperCase());
   }
 
-  function handleCodeKeyDown(e: React.KeyboardEvent) {
+  function handleCodeKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
       handleJoin();
     }
+  }
+
+  function handleSelectLeague(id: string) {
+    setActiveLeagueId(id);
   }
 
   let joinErrorEl: ReactNode = undefined;
@@ -94,7 +110,7 @@ export default function LeagueSelector() {
       <Popover.Root>
         <Popover.Trigger asChild>
           <button className="btn btn-ghost btn-sm">
-            {activeLeague?.name ?? APP.selectLeague} ▾
+            {activeLeague?.name ?? APP.selectLeague} {"\u25BE"}
           </button>
         </Popover.Trigger>
         <Popover.Portal>
@@ -103,12 +119,12 @@ export default function LeagueSelector() {
             sideOffset={8}
             align="start"
           >
-            {memberships.map((m) => (
+            {(leagues ?? []).map((league) => (
               <LeagueRow
-                key={m.leagues.id}
-                membership={m}
-                isActive={activeLeague?.id === m.leagues.id}
-                onSelect={setActiveLeague}
+                key={league.id}
+                league={league}
+                isActive={activeLeagueId === league.id}
+                onSelect={handleSelectLeague}
               />
             ))}
             <Popover.Close asChild>

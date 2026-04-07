@@ -1,5 +1,5 @@
 import { supabase } from "./client";
-import type { Season, SeasonInsert, SeasonUpdate } from "./types";
+import type { Season } from "./types";
 
 // ─── List ────────────────────────────────────────────────────
 
@@ -51,48 +51,19 @@ export async function getActiveSeason(): Promise<Season | null> {
   return data ?? null;
 }
 
-// ─── Create ──────────────────────────────────────────────────
+// ─── Get current (season with max year) ──────────────────────
 
-export async function createSeason(season: SeasonInsert): Promise<Season> {
+export async function getCurrentSeason(): Promise<Season | null> {
   const { data, error } = await supabase
     .from("season")
-    .insert(season)
-    .select()
-    .single();
+    .select("*")
+    .order("year", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  return data;
-}
-
-// ─── Update ──────────────────────────────────────────────────
-
-export async function updateSeason(
-  id: string,
-  updates: SeasonUpdate,
-): Promise<Season> {
-  const { data, error } = await supabase
-    .from("season")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-// ─── Delete ──────────────────────────────────────────────────
-
-export async function deleteSeason(id: string): Promise<void> {
-  const { error } = await supabase.from("season").delete().eq("id", id);
-
-  if (error) {
-    throw error;
-  }
+  return data ?? null;
 }

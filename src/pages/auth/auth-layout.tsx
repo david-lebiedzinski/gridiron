@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { APP } from "@/locales/en";
-import "./auth.css";
 
 interface AuthLayoutProps {
   children: ReactNode;

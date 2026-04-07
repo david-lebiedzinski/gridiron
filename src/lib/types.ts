@@ -102,12 +102,6 @@ export type Team = Tables["team"]["Row"];
 export type TeamInsert = Tables["team"]["Insert"];
 export type TeamUpdate = Tables["team"]["Update"];
 
-// ─── Team Record ─────────────────────────────────────────────
-
-export type TeamRecord = Tables["team_record"]["Row"];
-export type TeamRecordInsert = Tables["team_record"]["Insert"];
-export type TeamRecordUpdate = Tables["team_record"]["Update"];
-
 // ─── Season ──────────────────────────────────────────────────
 
 export type Season = Tables["season"]["Row"];

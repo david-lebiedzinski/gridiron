@@ -1,5 +1,5 @@
 import { supabase } from "./client";
-import type { Game, GameInsert, GameUpdate } from "./types";
+import type { Game, GameUpdate } from "./types";
 
 // ─── List by week ────────────────────────────────────────────
 
@@ -17,20 +17,20 @@ export async function getGamesByWeek(weekId: string): Promise<Game[]> {
   return data;
 }
 
-// ─── List by season ──────────────────────────────────────────
+// ─── List by season (joined via week) ────────────────────────
 
 export async function getGamesBySeason(seasonId: string): Promise<Game[]> {
   const { data, error } = await supabase
     .from("game")
-    .select("*")
-    .eq("season_id", seasonId)
+    .select("*, week!inner(season_id)")
+    .eq("week.season_id", seasonId)
     .order("kickoff_time");
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return data as unknown as Game[];
 }
 
 // ─── Get by ID ───────────────────────────────────────────────
@@ -49,23 +49,7 @@ export async function getGame(id: string): Promise<Game> {
   return data;
 }
 
-// ─── Create ──────────────────────────────────────────────────
-
-export async function createGame(game: GameInsert): Promise<Game> {
-  const { data, error } = await supabase
-    .from("game")
-    .insert(game)
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-// ─── Update ──────────────────────────────────────────────────
+// ─── Update (admin game editor) ──────────────────────────────
 
 export async function updateGame(
   id: string,
@@ -83,29 +67,4 @@ export async function updateGame(
   }
 
   return data;
-}
-
-// ─── Bulk update (e.g. ESPN sync) ────────────────────────────
-
-export async function upsertGames(games: GameInsert[]): Promise<Game[]> {
-  const { data, error } = await supabase
-    .from("game")
-    .upsert(games, { onConflict: "espn_game_id" })
-    .select();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-// ─── Delete ──────────────────────────────────────────────────
-
-export async function deleteGame(id: string): Promise<void> {
-  const { error } = await supabase.from("game").delete().eq("id", id);
-
-  if (error) {
-    throw error;
-  }
 }

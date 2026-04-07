@@ -5,12 +5,10 @@ import {
   getGamesByWeek,
   getGamesBySeason,
   getGame,
-  createGame,
   updateGame,
-  upsertGames,
-  deleteGame,
 } from "../lib/game";
-import type { Game, GameInsert, GameUpdate } from "../lib/types";
+import { syncFromESPN, syncCurrentWeek } from "../lib/espn";
+import type { Game, GameUpdate } from "../lib/types";
 
 const KEYS = {
   byWeek: (weekId: string) => ["games", "week", weekId] as const,
@@ -42,17 +40,6 @@ export function useGame(id: string) {
   });
 }
 
-export function useCreateGame() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (game: GameInsert) => createGame(game),
-    onSuccess: () =>
-      qc.invalidateQueries({
-        queryKey: ["games"],
-      }),
-  });
-}
-
 export function useUpdateGame() {
   const qc = useQueryClient();
   return useMutation({
@@ -65,25 +52,23 @@ export function useUpdateGame() {
   });
 }
 
-export function useUpsertGames() {
+export function useSyncFromESPN() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (games: GameInsert[]) => upsertGames(games),
-    onSuccess: () =>
-      qc.invalidateQueries({
-        queryKey: ["games"],
-      }),
+    mutationFn: () => syncFromESPN(),
+    onSuccess: () => {
+      qc.invalidateQueries();
+    },
   });
 }
 
-export function useDeleteGame() {
+export function useSyncCurrentWeek() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteGame(id),
-    onSuccess: () =>
-      qc.invalidateQueries({
-        queryKey: ["games"],
-      }),
+    mutationFn: () => syncCurrentWeek(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["games"] });
+    },
   });
 }
 

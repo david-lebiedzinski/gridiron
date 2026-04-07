@@ -30,7 +30,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      navigate("/picks");
+      navigate("/admin");
     } catch (err) {
       setError(err instanceof Error ? err.message : APP.genericError);
     } finally {

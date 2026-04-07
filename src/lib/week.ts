@@ -1,5 +1,5 @@
 import { supabase } from "./client";
-import type { Week, WeekInsert, WeekUpdate } from "./types";
+import type { Week } from "./types";
 
 // ─── List by season ──────────────────────────────────────────
 
@@ -8,8 +8,8 @@ export async function getWeeks(seasonId: string): Promise<Week[]> {
     .from("week")
     .select("*")
     .eq("season_id", seasonId)
-    .order("type")
-    .order("number");
+    .order("phase")
+    .order("espn_value");
 
   if (error) {
     throw error;
@@ -52,50 +52,4 @@ export async function getCurrentWeek(seasonId: string): Promise<Week | null> {
   }
 
   return data ?? null;
-}
-
-// ─── Create ──────────────────────────────────────────────────
-
-export async function createWeek(week: WeekInsert): Promise<Week> {
-  const { data, error } = await supabase
-    .from("week")
-    .insert(week)
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-// ─── Update ──────────────────────────────────────────────────
-
-export async function updateWeek(
-  id: string,
-  updates: WeekUpdate,
-): Promise<Week> {
-  const { data, error } = await supabase
-    .from("week")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-// ─── Delete ──────────────────────────────────────────────────
-
-export async function deleteWeek(id: string): Promise<void> {
-  const { error } = await supabase.from("week").delete().eq("id", id);
-
-  if (error) {
-    throw error;
-  }
 }

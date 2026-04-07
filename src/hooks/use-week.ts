@@ -1,13 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getWeeks,
-  getWeek,
-  getCurrentWeek,
-  createWeek,
-  updateWeek,
-  deleteWeek,
-} from "../lib/week";
-import type { WeekInsert, WeekUpdate } from "../lib/types";
+import { useQuery } from "@tanstack/react-query";
+import { getWeeks, getWeek, getCurrentWeek } from "../lib/week";
 
 const KEYS = {
   bySeason: (seasonId: string) => ["weeks", seasonId] as const,
@@ -36,39 +28,5 @@ export function useCurrentWeek(seasonId: string) {
     queryKey: KEYS.current(seasonId),
     queryFn: () => getCurrentWeek(seasonId),
     enabled: !!seasonId,
-  });
-}
-
-export function useCreateWeek() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (week: WeekInsert) => createWeek(week),
-    onSuccess: (_, variables) =>
-      qc.invalidateQueries({
-        queryKey: KEYS.bySeason(variables.season_id),
-      }),
-  });
-}
-
-export function useUpdateWeek() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: WeekUpdate }) =>
-      updateWeek(id, updates),
-    onSuccess: () =>
-      qc.invalidateQueries({
-        queryKey: ["weeks"],
-      }),
-  });
-}
-
-export function useDeleteWeek() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => deleteWeek(id),
-    onSuccess: () =>
-      qc.invalidateQueries({
-        queryKey: ["weeks"],
-      }),
   });
 }

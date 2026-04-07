@@ -155,3 +155,22 @@ export async function leaveLeague(
     throw error;
   }
 }
+
+// ─── Regenerate invite code ─────────────────────────────────
+
+export async function regenerateInviteCode(id: string): Promise<League> {
+  const code = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+
+  const { data, error } = await supabase
+    .from("league")
+    .update({ invite_code: code })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
